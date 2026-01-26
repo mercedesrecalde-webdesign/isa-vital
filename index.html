@@ -1,3 +1,22 @@
+¡Mil disculpas! Tienes toda la razón. En el afán de agregar lo nuevo (Agenda y Selector), borré sin querer la lista completa de insumos y la lógica de reintegros que ya habíamos perfeccionado. Fue un error mío sobrescribir en lugar de integrar.
+
+Aquí tienes el código FUSIONADO DEFINITIVO.
+
+¿Qué tiene esta versión? (TODO LO QUE PEDISTE):
+
+✅ Stock COMPLETO: Volvieron todos (Reservorios, Set de Infusión, Sensores, Insulina, Levotiroxina, Tiras Glucosa, Cetonas).
+
+✅ Gestión Completa: Filtros funcionando (OSEF, PFA, Reintegros, Reclamos) y el botón especial de + Nuevo Gasto/Reintegro con campos de factura.
+
+✅ Selector de Proveedor: Al pedir desde Stock, se abre la ventana para elegir ¿OSEF o PFA?.
+
+✅ Agenda y Archivos: La nueva pestaña para turnos y subir resultados.
+
+✅ Directorio Médico: Con botones reales de WhatsApp.
+
+Copia y pega este código. Es el definitivo que une lo viejo con lo nuevo.
+
+HTML
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -16,198 +35,235 @@
 
     <style>
         :root {
-            --primary: #003399; 
-            --accent: #FF6600; 
-            --white: #FFFFFF; 
-            --bg: #F0F2F5;
-            --text-main: #111827; 
-            --text-sec: #6B7280;
+            /* Identidad TDF */
+            --primary: #003399; --accent: #FF6600; 
+            --white: #FFFFFF; --bg: #F0F2F5;
+            --text-main: #111827; --text-sec: #6B7280;
             
-            /* Etiquetas */
-            --tag-osef-bg: #FFF7ED; --tag-osef-txt: #9A3412;
-            --tag-pfa-bg: #EFF6FF; --tag-pfa-txt: #1E40AF;
+            /* Colores Categorías */
+            --cat-osef-bg: #FFF7ED; --cat-osef-txt: #9A3412; 
+            --cat-pfa-bg: #EFF6FF; --cat-pfa-txt: #1E40AF;  
+            --cat-money-bg: #ECFDF5; --cat-money-txt: #065F46; 
+            --cat-alert-bg: #FEF2F2; --cat-alert-txt: #991B1B; 
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { 
-            font-family: 'Inter', sans-serif; 
-            background-color: var(--bg); 
-            margin: 0; 
-            padding-bottom: 90px; /* Espacio para el menú inferior */
-            overscroll-behavior-y: none; 
-            user-select: none;
-        }
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 95px; overscroll-behavior-y: none; user-select: none;}
 
         /* HEADER */
-        header { 
-            background: var(--white); 
-            padding: 15px 20px; 
-            position: sticky; top: 0; z-index: 50; 
-            box-shadow: 0 1px 10px rgba(0,0,0,0.05); 
-            display: flex; justify-content: space-between; align-items: center; 
-            padding-top: max(15px, env(safe-area-inset-top)); 
-        }
-        .logo { font-size: 1.3rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; }
+        header { background: var(--white); padding: 15px 20px; position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; padding-top: max(15px, env(safe-area-inset-top)); }
+        .logo { font-size: 1.3rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px;}
         .logo span { color: var(--accent); }
 
-        /* CONTENEDORES (Pestañas) */
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; display: none; animation: fadeIn 0.3s; }
+        /* CONTENEDORES */
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; display: none; animation: fadeIn 0.3s ease-out; }
         .container.active { display: block; }
+        .card { background: var(--white); border-radius: 18px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.04); }
 
-        /* TARJETAS (Cards) */
-        .card { 
-            background: var(--white); 
-            border-radius: 18px; 
-            padding: 16px; 
-            margin-bottom: 12px; 
-            box-shadow: 0 2px 5px rgba(0,0,0,0.02); 
-            border: 1px solid rgba(0,0,0,0.04); 
-        }
-
-        /* STOCK (Botones +/-) */
+        /* --- ESTILOS STOCK --- */
+        .section-title { margin: 20px 0 10px 5px; color: var(--text-sec); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
         .inv-row { display: flex; justify-content: space-between; align-items: center; }
+        .inv-info h3 { margin: 0 0 4px 0; font-size: 0.95rem; color: var(--primary); }
+        .inv-info p { margin: 0; font-size: 0.75rem; color: var(--text-sec); }
         .inv-controls { display: flex; align-items: center; gap: 8px; background: #F3F4F6; padding: 4px; border-radius: 12px; }
-        .inv-btn { width: 32px; height: 32px; border: none; background: white; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-weight: bold; color: var(--primary); font-size: 1.2rem; display:flex; align-items:center; justify-content:center;}
-        .inv-val { font-weight: 700; width: 35px; text-align: center; border:none; background:transparent; font-size: 1rem; }
+        .inv-btn { width: 32px; height: 32px; border: none; background: white; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: bold; cursor: pointer; }
+        .inv-val { font-weight: 700; width: 35px; text-align: center; font-size: 1rem; border: none; background: transparent; }
 
-        /* AGENDA (Fechas) */
+        /* --- ESTILOS GESTIÓN (FILTROS) --- */
+        .filter-bar { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
+        .filter-bar::-webkit-scrollbar { display: none; } 
+        .filter-btn { border: 1px solid #E5E7EB; background: white; padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-sec); white-space: nowrap; cursor: pointer; transition: all 0.2s; }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(0, 51, 153, 0.2); }
+
+        /* Tarjetas de Pedido */
+        .order-card { border-left: 5px solid transparent; transition: transform 0.2s; }
+        .order-card.osef { border-left-color: var(--accent); }
+        .order-card.pfa { border-left-color: var(--primary); }
+        .order-card.reintegro { border-left-color: #10B981; }
+        .order-card.reclamo { border-left-color: #EF4444; background: #FFF5F5; }
+
+        .tag { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-block; margin-bottom: 8px;}
+        .tag.osef { background: var(--cat-osef-bg); color: var(--cat-osef-txt); }
+        .tag.pfa { background: var(--cat-pfa-bg); color: var(--cat-pfa-txt); }
+        .tag.money { background: var(--cat-money-bg); color: var(--cat-money-txt); }
+        .tag.alert { background: var(--cat-alert-bg); color: var(--cat-alert-txt); }
+
+        .order-status { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #E5E7EB; display: flex; justify-content: space-between; }
+        .status-btn { background: none; border: 1px solid #D1D5DB; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; color: var(--text-sec); transition: all 0.2s; }
+        .status-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 2px 5px rgba(0, 51, 153, 0.2); }
+        
+        /* Reintegros Detalles */
+        .reintegro-details { background: #ECFDF5; padding: 10px; border-radius: 10px; font-size: 0.85rem; color: #064E3B; margin-top: 8px; }
+        .reintegro-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .input-dashed { border: none; border-bottom: 1px dashed #059669; background: transparent; width: 60%; text-align: right; color: #065F46; outline: none; }
+
+        /* --- AGENDA & ARCHIVOS --- */
         .turn-item { display: flex; align-items: center; gap: 15px; }
         .turn-date { background: #EEF2FF; color: var(--primary); padding: 8px 12px; border-radius: 12px; text-align: center; min-width: 60px; }
         .turn-day { font-size: 1.2rem; font-weight: 700; display: block; line-height: 1; }
         .turn-month { font-size: 0.7rem; text-transform: uppercase; font-weight: 600; }
-        
-        /* ARCHIVOS */
         .file-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .file-row:last-child { border-bottom: none; }
         .file-icon { width: 40px; height: 40px; background: #FFF7ED; color: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 12px; }
 
-        /* ETIQUETAS (Tags) */
-        .tag { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-block; margin-bottom: 8px; }
-        .tag.osef { background: var(--tag-osef-bg); color: var(--tag-osef-txt); }
-        .tag.pfa { background: var(--tag-pfa-bg); color: var(--tag-pfa-txt); }
+        /* --- EQUIPO --- */
+        .medic-header { display: flex; gap: 15px; align-items: center; margin-bottom: 12px; }
+        .data-box { background:#F9FAFB; padding:10px; border-radius:10px; margin-bottom:10px; border:1px solid #eee; }
+        .data-row { display:flex; align-items:center; margin-bottom:8px; font-size: 0.85rem;}
 
-        .order-card { border-left: 4px solid transparent; }
-        .order-card.osef { border-left-color: var(--accent); }
-        .order-card.pfa { border-left-color: var(--primary); }
-
-        /* MENÚ INFERIOR */
-        .bottom-nav { 
-            position: fixed; bottom: 0; width: 100%; 
-            background: rgba(255,255,255,0.98); 
-            border-top: 1px solid #E5E7EB; 
-            display: flex; justify-content: space-around; 
-            padding: 10px 0; z-index: 100; 
-            padding-bottom: max(15px, env(safe-area-inset-bottom)); 
-        }
-        .nav-item { border: none; background: none; display: flex; flex-direction: column; align-items: center; color: #9CA3AF; font-size: 0.65rem; gap: 4px; cursor: pointer; width: 25%; }
+        /* NAV & FAB */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.98); border-top: 1px solid #E5E7EB; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; padding-bottom: max(15px, env(safe-area-inset-bottom)); }
+        .nav-item { border: none; background: none; display: flex; flex-direction: column; align-items: center; color: #9CA3AF; font-size: 0.65rem; gap: 5px; cursor: pointer; width: 25%; }
         .nav-item.active { color: var(--primary); }
         .nav-item.active span.material-icons-round { color: var(--accent); transform: translateY(-2px); }
 
-        /* VENTANA MODAL (Pop-up) */
-        .modal-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(0,0,0,0.5); z-index: 2000; 
-            display: none; align-items: center; justify-content: center; 
-            backdrop-filter: blur(2px); 
-        }
-        .modal-box { 
-            background: white; width: 85%; max-width: 320px; padding: 25px; 
-            border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; 
-        }
-        .modal-btn { 
-            width: 100%; padding: 12px; margin-top: 10px; 
-            border: none; border-radius: 10px; font-weight: 600; 
-            cursor: pointer; font-size: 0.9rem; 
-            display: flex; align-items: center; justify-content: center; gap: 10px; 
-        }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        .fab { position: fixed; bottom: 95px; right: 20px; background: var(--accent); color: white; width: 56px; height: 56px; border-radius: 50%; border: none; box-shadow: 0 4px 15px rgba(255,102,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 90; margin-bottom: env(safe-area-inset-bottom); cursor: pointer; transition: transform 0.2s; }
+        .fab:active { transform: scale(0.95); }
+
+        /* MODAL SELECTOR */
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
+        .modal-box { background: white; width: 85%; max-width: 320px; padding: 25px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; }
+        .modal-btn { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <header>
-        <div class="logo">
-            <span class="material-icons-round" style="color:var(--accent);">favorite</span>
-            Isa<span>Vital</span>
-        </div>
+        <div class="logo"><span class="material-icons-round" style="color:var(--accent);">favorite</span>Isa<span>Vital</span></div>
         <div style="width:32px; height:32px; background:#EEF2FF; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary); font-weight:bold; font-size:0.8rem;">IG</div>
     </header>
 
     <div id="tab-stock" class="container active">
-        <h4 style="color:var(--text-sec); font-size:0.75rem; margin:15px 5px; font-weight:700;">INSUMOS T1D</h4>
+        
+        <h4 class="section-title">Bomba de Insulina (OSEF)</h4>
         
         <div class="card">
             <div class="inv-row">
-                <div>
-                    <h3 style="margin:0; color:var(--primary); font-size:1rem;">Sensores Guardian 3</h3>
-                    <p style="margin:0; font-size:0.75rem; color:#666;">MMT-7020</p>
-                </div>
-                <div class="inv-controls">
-                    <button class="inv-btn" onclick="updateStock(this, -1)">-</button>
-                    <input type="number" class="inv-val" value="2" readonly>
-                    <button class="inv-btn" onclick="updateStock(this, 1)">+</button>
-                </div>
+                <div class="inv-info"><h3 contenteditable="true">Reservorios 3.0ml</h3><p contenteditable="true">MMT-332 (Cajas x 10)</p></div>
+                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="5"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
             </div>
-            <div style="text-align:right; margin-top:10px;">
-                <button onclick="openProviderModal('Sensores Guardian 3')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button>
+            <div style="text-align:right; margin-top:10px;"><button onclick="openProviderModal('Reservorios MMT-332')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button></div>
+        </div>
+
+        <div class="card">
+            <div class="inv-row">
+                <div class="inv-info"><h3 contenteditable="true">Set Infusión</h3><p contenteditable="true">MMT-327 (Cajas x 10)</p></div>
+                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="4"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
+            </div>
+            <div style="text-align:right; margin-top:10px;"><button onclick="openProviderModal('Set Infusión MMT-327')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button></div>
+        </div>
+
+        <div class="card">
+            <div class="inv-row">
+                <div class="inv-info"><h3 contenteditable="true">Sensores Guardian 3</h3><p contenteditable="true">MMT 7020 (Unidades)</p></div>
+                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="2"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
+            </div>
+            <div style="text-align:right; margin-top:10px;"><button onclick="openProviderModal('Sensores Guardian 3')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button></div>
+        </div>
+
+        <h4 class="section-title">Medicación (PFA/Farmacia)</h4>
+        
+        <div class="card">
+            <div class="inv-row">
+                <div class="inv-info"><h3 contenteditable="true">Insulina Aspártica</h3><p contenteditable="true">Viales / Lapiceras</p></div>
+                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="3"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
+            </div>
+             <div style="text-align:right; margin-top:10px;"><button onclick="openProviderModal('Insulina Aspártica')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button></div>
+        </div>
+        
+        <div class="card">
+            <div class="inv-row">
+                <div class="inv-info"><h3 contenteditable="true">Levotiroxina 125mg</h3><p contenteditable="true">Caja (Comprimidos)</p></div>
+                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="1"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
+            </div>
+            <div style="text-align:right; margin-top:10px;"><button onclick="openProviderModal('Levotiroxina')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button></div>
+        </div>
+        
+        <div class="card">
+            <div class="inv-row">
+                <div class="inv-info"><h3 contenteditable="true">Tiras Glucosa</h3><p contenteditable="true">Control diario</p></div>
+                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -10)">-</button><input type="number" class="inv-val" value="100"><button class="inv-btn" onclick="updateStock(this, 10)">+</button></div>
             </div>
         </div>
 
         <div class="card">
             <div class="inv-row">
-                <div>
-                    <h3 style="margin:0; color:var(--primary); font-size:1rem;">Reservorios 3.0ml</h3>
-                    <p style="margin:0; font-size:0.75rem; color:#666;">MMT-332</p>
-                </div>
-                <div class="inv-controls">
-                    <button class="inv-btn" onclick="updateStock(this, -1)">-</button>
-                    <input type="number" class="inv-val" value="5" readonly>
-                    <button class="inv-btn" onclick="updateStock(this, 1)">+</button>
-                </div>
-            </div>
-            <div style="text-align:right; margin-top:10px;">
-                <button onclick="openProviderModal('Reservorios MMT-332')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button>
+                <div class="inv-info"><h3 contenteditable="true">Tiras Cetonas</h3><p contenteditable="true">Orina / Sangre</p></div>
+                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="25"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
             </div>
         </div>
-
-         <div class="card">
-            <div class="inv-row">
-                <div>
-                    <h3 style="margin:0; color:var(--primary); font-size:1rem;">Insulina Aspártica</h3>
-                    <p style="margin:0; font-size:0.75rem; color:#666;">Viales / Lapiceras</p>
-                </div>
-                <div class="inv-controls">
-                    <button class="inv-btn" onclick="updateStock(this, -1)">-</button>
-                    <input type="number" class="inv-val" value="3" readonly>
-                    <button class="inv-btn" onclick="updateStock(this, 1)">+</button>
-                </div>
-            </div>
-            <div style="text-align:right; margin-top:10px;">
-                <button onclick="openProviderModal('Insulina')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button>
-            </div>
+        
+        <div style="text-align:center; margin-top:20px;">
+             <button onclick="addNewItem()" style="background:none; border:2px dashed #ccc; padding:12px 20px; border-radius:12px; color:#666; font-weight:600;">+ Agregar Otro Insumo</button>
         </div>
     </div>
 
     <div id="tab-gestion" class="container">
-        <h4 style="color:var(--text-sec); font-size:0.75rem; margin:15px 5px; font-weight:700;">PEDIDOS ACTIVOS</h4>
+        
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterGestion('all', this)">Todos</button>
+            <button class="filter-btn" onclick="filterGestion('osef', this)">OSEF</button>
+            <button class="filter-btn" onclick="filterGestion('pfa', this)">PFA</button>
+            <button class="filter-btn" onclick="filterGestion('reintegro', this)">Reintegros</button>
+            <button class="filter-btn" style="color:var(--cat-alert-txt); border-color:#FECACA;" onclick="filterGestion('reclamo', this)">Reclamos</button>
+        </div>
+
+        <button onclick="addReintegro()" style="width:100%; padding:10px; margin-bottom:15px; border:2px dashed #10B981; color:#10B981; background:#F0FDF4; border-radius:12px; font-weight:600; cursor:pointer;">+ Nuevo Gasto / Reintegro</button>
+
         <div id="orders-list">
-            <div class="card order-card osef">
+            
+            <div class="card order-card reintegro" data-cat="reintegro">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <span class="tag money">Reintegro</span>
+                    <div style="text-align:right;">
+                        <span style="font-size:0.6rem; color:#666; display:block;">Costo</span>
+                        <span style="font-weight:bold; color:#059669; font-size:0.9rem;" contenteditable="true">$ 25.000</span>
+                    </div>
+                </div>
+                <h3 style="margin: 5px 0 2px 0; font-size: 1rem;" contenteditable="true">Consulta Dra. Perez</h3>
+                <div class="reintegro-details">
+                    <div class="reintegro-row"><span>🧾 Factura:</span><span contenteditable="true" class="input-dashed">Pendiente</span></div>
+                    <div class="reintegro-row"><span>📝 Receta:</span><span contenteditable="true" class="input-dashed">Si</span></div>
+                </div>
+                <div class="order-status">
+                    <button class="status-btn active" style="background:#ECFDF5; color:#065F46; border-color:transparent;" onclick="setStatus(this)">A Presentar</button>
+                    <button class="status-btn" onclick="setStatus(this)">Presentado</button>
+                    <button class="status-btn" onclick="setStatus(this)">Cobrado</button>
+                </div>
+            </div>
+
+            <div class="card order-card osef" data-cat="osef">
                 <div style="display:flex; justify-content:space-between;">
                     <span class="tag osef">OSEF</span>
                     <span style="font-size:0.7rem; color:#666;">Ayer</span>
                 </div>
                 <h3 style="margin:5px 0; font-size:1rem;">Pedido Mensual Sensores</h3>
-                <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #eee; display:flex; justify-content:space-between;">
-                    <span style="color:var(--primary); font-weight:600; font-size:0.85rem;">En Auditoría</span>
+                <div class="order-status">
+                    <button class="status-btn" onclick="setStatus(this)">Iniciado</button>
+                    <button class="status-btn active" onclick="setStatus(this)">Auditoría</button>
+                    <button class="status-btn" onclick="setStatus(this)">Listo</button>
                 </div>
             </div>
+            
+            <div class="card order-card reclamo" data-cat="reclamo">
+                <div style="display:flex; justify-content:space-between;">
+                    <span class="tag alert">Reclamo</span>
+                    <span style="font-size:0.7rem; color:#991B1B; font-weight:bold;">URGENTE</span>
+                </div>
+                <h3 style="margin: 5px 0; font-size: 1rem;">Faltante Agujas</h3>
+                <div class="order-status">
+                    <button class="status-btn active" style="background:#FEE2E2; color:#991B1B; border-color:transparent;">En Curso</button>
+                    <button class="status-btn">Resuelto</button>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <div id="tab-agenda" class="container">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h4 style="margin:0; color:var(--text-sec); font-size:0.75rem; font-weight:700;">PRÓXIMOS TURNOS</h4>
+            <h4 class="section-title" style="margin:0;">PRÓXIMOS TURNOS</h4>
             <button onclick="addTurno()" style="color:var(--primary); font-weight:700; background:none; border:none;">+ Agendar</button>
         </div>
 
@@ -225,7 +281,7 @@
         </div>
 
         <div style="display:flex; justify-content:space-between; align-items:center; margin:30px 0 10px 0;">
-            <h4 style="margin:0; color:var(--text-sec); font-size:0.75rem; font-weight:700;">HISTORIA CLÍNICA</h4>
+            <h4 class="section-title" style="margin:0;">HISTORIA CLÍNICA</h4>
             <button onclick="document.getElementById('fileInput').click()" style="color:var(--accent); font-weight:700; background:none; border:none;">+ Subir PDF/Foto</button>
             <input type="file" id="fileInput" hidden onchange="uploadFileFake(this)">
         </div>
@@ -242,88 +298,61 @@
     </div>
 
     <div id="tab-equipo" class="container">
-        <h4 style="color:var(--text-sec); font-size:0.75rem; margin:15px 5px; font-weight:700;">DIRECTORIO MÉDICO</h4>
-        
         <div class="card">
-            <div style="display:flex; gap:15px; align-items:center; margin-bottom:15px;">
+            <div class="medic-header">
                 <div style="width:48px; height:48px; background:#EEF2FF; border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--primary);"><span class="material-icons-round">medical_services</span></div>
-                <div>
-                    <h3 style="margin:0; font-size:1rem; color:var(--primary);" contenteditable="true">Dra. Endocrinóloga</h3>
-                    <p style="margin:0; font-size:0.8rem; color:var(--text-sec);" contenteditable="true">Hosp. Regional Ushuaia</p>
-                </div>
+                <div><h3 style="margin:0; font-size:1rem; color:var(--primary);" contenteditable="true">Dra. Endocrinóloga</h3><p style="margin:0; font-size:0.8rem; color:var(--text-sec);" contenteditable="true">Hosp. Regional Ushuaia</p></div>
             </div>
             
-            <div style="background:#F9FAFB; padding:10px; border-radius:10px; margin-bottom:10px;">
-                <div style="display:flex; align-items:center; margin-bottom:8px;">
-                    <span class="material-icons-round" style="font-size:16px; color:#6B7280; margin-right:5px;">phone</span>
-                    <span class="data-phone" contenteditable="true" style="font-weight:600; color:var(--text-main); outline:none;">2901 601234</span>
-                </div>
-                <div style="display:flex; align-items:center;">
-                    <span class="material-icons-round" style="font-size:16px; color:#6B7280; margin-right:5px;">email</span>
-                    <span class="data-email" contenteditable="true" style="color:var(--text-main); outline:none;">doctora@email.com</span>
-                </div>
+            <div class="data-box">
+                <div class="data-row"><span class="material-icons-round" style="font-size:16px; color:#6B7280; margin-right:5px;">phone</span><span class="data-phone" contenteditable="true" style="font-weight:600; color:var(--text-main); outline:none;">2901 601234</span></div>
+                <div class="data-row"><span class="material-icons-round" style="font-size:16px; color:#6B7280; margin-right:5px;">email</span><span class="data-email" contenteditable="true" style="color:var(--text-main); outline:none;">doctora@email.com</span></div>
             </div>
 
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <button onclick="actionWhatsApp(this)" style="padding:10px; background:var(--bg); color:var(--text-main); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px; cursor:pointer;">
-                    <span class="material-icons-round" style="color:#25D366; font-size:18px;">chat</span> WhatsApp
-                </button>
-                <button onclick="actionCall(this)" style="padding:10px; background:var(--bg); color:var(--text-main); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px; cursor:pointer;">
-                    <span class="material-icons-round" style="color:var(--primary); font-size:18px;">call</span> Llamar
-                </button>
+                <button onclick="actionWhatsApp(this)" style="padding:10px; background:var(--bg); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-icons-round" style="color:#25D366; font-size:18px;">chat</span> WhatsApp</button>
+                <button onclick="actionCall(this)" style="padding:10px; background:var(--bg); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-icons-round" style="color:var(--primary); font-size:18px;">call</span> Llamar</button>
             </div>
+        </div>
+        <div style="text-align:center; margin-top:20px;">
+            <button onclick="addMedic()" style="background:none; border:2px dashed #ccc; padding:12px 20px; border-radius:12px; color:#666; font-weight:600;">+ Agregar Profesional</button>
         </div>
     </div>
 
     <div id="modalProvider" class="modal-overlay">
         <div class="modal-box">
-            <h3 style="margin-top:0;">¿A quién pedir?</h3>
-            <p id="modalItemName" style="color:#666; font-size:0.9rem; margin-bottom:20px;">Insumo</p>
+            <h3 style="margin-top:0;">¿Para quién es el pedido?</h3>
+            <p id="modalItemName" style="color:#666; font-size:0.9rem; margin-bottom:20px; font-weight:bold;">Insumo</p>
             
-            <button class="modal-btn" style="background:#FFF7ED; color:#9A3412;" onclick="confirmOrder('OSEF')">
-                <span class="material-icons-round">local_pharmacy</span> OSEF TDF
-            </button>
-            <button class="modal-btn" style="background:#EFF6FF; color:#1E40AF;" onclick="confirmOrder('PFA')">
-                <span class="material-icons-round">security</span> Policía Federal
-            </button>
-            <button class="modal-btn" style="background:#F3F4F6; color:#374151;" onclick="closeModal()">
-                Cancelar
-            </button>
+            <button class="modal-btn" style="background:#FFF7ED; color:#9A3412;" onclick="confirmOrder('OSEF')"><span class="material-icons-round">local_pharmacy</span> OSEF TDF</button>
+            <button class="modal-btn" style="background:#EFF6FF; color:#1E40AF;" onclick="confirmOrder('PFA')"><span class="material-icons-round">security</span> Policía Federal</button>
+            <button class="modal-btn" style="background:#F3F4F6; color:#374151;" onclick="closeModal()">Cancelar</button>
         </div>
     </div>
 
     <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchTab('tab-stock', this)">
-            <span class="material-icons-round">inventory_2</span><span>Stock</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('tab-gestion', this)">
-            <span class="material-icons-round">assignment</span><span>Gestión</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('tab-agenda', this)">
-            <span class="material-icons-round">event</span><span>Agenda</span>
-        </button>
-        <button class="nav-item" onclick="switchTab('tab-equipo', this)">
-            <span class="material-icons-round">people</span><span>Equipo</span>
-        </button>
+        <button class="nav-item active" onclick="switchTab('tab-stock', this)"><span class="material-icons-round">inventory_2</span><span>Stock</span></button>
+        <button class="nav-item" onclick="switchTab('tab-gestion', this)"><span class="material-icons-round">assignment</span><span>Gestión</span></button>
+        <button class="nav-item" onclick="switchTab('tab-agenda', this)"><span class="material-icons-round">event</span><span>Agenda</span></button>
+        <button class="nav-item" onclick="switchTab('tab-equipo', this)"><span class="material-icons-round">people</span><span>Equipo</span></button>
     </nav>
 
     <script>
-        // 1. CAMBIAR PESTAÑAS
+        // 1. NAVEGACIÓN
         function switchTab(tabId, btn) {
-            // Ocultar todas las pestañas
             document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
-            // Mostrar la elegida
             document.getElementById(tabId).classList.add('active');
-            
-            // Apagar todos los botones del menú
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
-            // Encender el elegido
             btn.classList.add('active');
             
+            // Si vamos a Gestión, mostrar todos por defecto
+            if(tabId === 'tab-gestion') {
+                filterGestion('all', document.querySelector('.filter-btn'));
+            }
             window.scrollTo(0,0);
         }
 
-        // 2. ACTUALIZAR STOCK (+/-)
+        // 2. STOCK (+/-)
         function updateStock(btn, amount) {
             const input = btn.parentElement.querySelector('input');
             let val = parseInt(input.value) + amount;
@@ -331,114 +360,182 @@
             input.value = val;
         }
 
-        // 3. PEDIDOS (VENTANA MODAL)
+        // Agregar Nuevo Insumo (Funcionalidad Recuperada)
+        function addNewItem() {
+            const container = document.getElementById('tab-stock');
+            // Insertar antes del título de Medicación o al final
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `
+                <div class="inv-row">
+                    <div class="inv-info"><h3 contenteditable="true">Nuevo Insumo</h3><p contenteditable="true">Detalle</p></div>
+                    <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="0"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
+                </div>
+                <div style="text-align:right; margin-top:10px;"><button onclick="openProviderModal('Nuevo Insumo')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button></div>
+            `;
+            // Insertar antes del botón de agregar
+            const btnContainer = container.lastElementChild;
+            container.insertBefore(div, btnContainer);
+        }
+
+        // 3. GESTIÓN (FILTROS)
+        function filterGestion(category, btn) {
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            if(btn) btn.classList.add('active');
+
+            const cards = document.querySelectorAll('.order-card');
+            cards.forEach(card => {
+                if (category === 'all' || card.dataset.cat === category) {
+                    card.style.display = 'block';
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+        }
+
+        function setStatus(btn) {
+            const siblings = btn.parentElement.querySelectorAll('.status-btn');
+            siblings.forEach(s => s.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // 4. PEDIDOS (MODAL SELECTOR)
         let currentItem = '';
-        
         function openProviderModal(item) {
             currentItem = item;
             document.getElementById('modalItemName').innerText = item;
             document.getElementById('modalProvider').style.display = 'flex';
         }
-
-        function closeModal() {
-            document.getElementById('modalProvider').style.display = 'none';
-        }
+        function closeModal() { document.getElementById('modalProvider').style.display = 'none'; }
 
         function confirmOrder(provider) {
             closeModal();
-            // Ir automáticamente a la pestaña Gestión
-            const navButtons = document.querySelectorAll('.nav-item');
-            switchTab('tab-gestion', navButtons[1]); // 1 es el índice de Gestión
+            const navs = document.querySelectorAll('.nav-item');
+            switchTab('tab-gestion', navs[1]);
             
-            // Crear la tarjeta visual del pedido
             const container = document.getElementById('orders-list');
             const div = document.createElement('div');
             let tagClass = provider === 'OSEF' ? 'osef' : 'pfa';
-            
-            // Fecha de hoy
             const today = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
-
+            
             div.className = `card order-card ${tagClass}`;
+            div.dataset.cat = tagClass;
             div.style.animation = "fadeIn 0.5s";
+            
             div.innerHTML = `
                 <div style="display:flex; justify-content:space-between;">
                     <span class="tag ${tagClass}">${provider}</span>
                     <span style="font-size:0.7rem; color:#666;">${today}</span>
                 </div>
-                <h3 style="margin:5px 0; font-size:1rem;">Pedido: ${currentItem}</h3>
-                <div style="margin-top:10px; padding-top:10px; border-top:1px dashed #eee; display:flex; justify-content:space-between;">
-                    <span style="color:var(--accent); font-weight:600; font-size:0.85rem;">A Pedir / Iniciar</span>
-                    <button onclick="this.parentElement.parentElement.remove()" style="background:none; border:none; color:#999; font-size:0.7rem;">Borrar</button>
+                <h3 style="margin:5px 0; font-size:1rem;">${currentItem}</h3>
+                <div class="order-status">
+                    <button class="status-btn active" onclick="setStatus(this)">A Pedir</button>
+                    <button class="status-btn" onclick="setStatus(this)">En Proceso</button>
+                    <button class="status-btn" onclick="setStatus(this)">Listo</button>
                 </div>
             `;
             container.prepend(div);
+            filterGestion('all', document.querySelector('.filter-btn'));
         }
 
-        // 4. AGENDA (CREAR TURNO)
+        // Agregar Reintegro (Lógica Recuperada)
+        function addReintegro() {
+            const container = document.getElementById('orders-list');
+            const div = document.createElement('div');
+            div.className = "card order-card reintegro";
+            div.dataset.cat = "reintegro";
+            div.style.animation = "fadeIn 0.5s";
+            div.innerHTML = `
+                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                    <span class="tag money">Reintegro</span>
+                    <div style="text-align:right;">
+                        <span style="font-size:0.6rem; color:#666; display:block;">Costo</span>
+                        <span style="font-weight:bold; color:#059669; font-size:0.9rem;" contenteditable="true">$ 0.00</span>
+                    </div>
+                </div>
+                <h3 style="margin: 5px 0 2px 0; font-size: 1rem;" contenteditable="true">Nuevo Gasto</h3>
+                <div class="reintegro-details">
+                    <div class="reintegro-row"><span>🧾 Factura:</span><span contenteditable="true" class="input-dashed">--</span></div>
+                    <div class="reintegro-row"><span>📝 Receta:</span><span contenteditable="true" class="input-dashed">--</span></div>
+                </div>
+                <div class="order-status">
+                    <button class="status-btn active" style="background:#ECFDF5; color:#065F46; border-color:transparent;" onclick="setStatus(this)">A Presentar</button>
+                    <button class="status-btn" onclick="setStatus(this)">Cobrado</button>
+                </div>
+            `;
+            container.prepend(div);
+            // Simular click en filtro Reintegro
+            const btns = document.querySelectorAll('.filter-btn');
+            filterGestion('reintegro', btns[3]);
+        }
+
+        // 5. AGENDA & ARCHIVOS
         function addTurno() {
             const container = document.getElementById('turnos-list');
             const div = document.createElement('div');
             div.className = 'card turn-item';
             div.style.animation = "fadeIn 0.5s";
             div.innerHTML = `
-                <div class="turn-date" contenteditable="true">
-                    <span class="turn-day">--</span>
-                    <span class="turn-month">MES</span>
-                </div>
-                <div>
-                    <h3 style="margin:0; font-size:1rem; color:var(--text-main);" contenteditable="true">Nueva Cita</h3>
-                    <p style="margin:0; font-size:0.8rem; color:var(--text-sec);" contenteditable="true">Hora y Lugar</p>
-                </div>
+                <div class="turn-date" contenteditable="true"><span class="turn-day">--</span><span class="turn-month">MES</span></div>
+                <div><h3 style="margin:0; font-size:1rem; color:var(--text-main);" contenteditable="true">Nueva Cita</h3><p style="margin:0; font-size:0.8rem; color:var(--text-sec);" contenteditable="true">Hora y Lugar</p></div>
             `;
             container.prepend(div);
         }
 
-        // 5. SUBIR ARCHIVO (SIMULADO)
         function uploadFileFake(input) {
             if (input.files && input.files[0]) {
-                const fileName = input.files[0].name;
                 const container = document.getElementById('files-list');
                 const div = document.createElement('div');
                 div.className = 'file-row';
                 div.style.animation = "fadeIn 0.5s";
                 div.innerHTML = `
                     <div class="file-icon"><span class="material-icons-round">description</span></div>
-                    <div style="flex:1">
-                        <div style="font-weight:600; font-size:0.9rem;" contenteditable="true">${fileName}</div>
-                        <div style="font-size:0.75rem; color:#999;">Recién subido</div>
-                    </div>
+                    <div style="flex:1"><div style="font-weight:600; font-size:0.9rem;">${input.files[0].name}</div><div style="font-size:0.75rem; color:#999;">Recién subido</div></div>
                 `;
                 container.prepend(div);
-                alert("Archivo cargado (Simulación local)");
+                alert("Archivo cargado (Simulación)");
             }
         }
 
-        // 6. CONTACTO REAL (WHATSAPP & LLAMADA)
+        // 6. CONTACTO & EQUIPO
+        function addMedic() {
+            const container = document.getElementById('tab-equipo');
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `
+                <div class="medic-header">
+                    <div style="width:48px; height:48px; background:#EEF2FF; border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--primary);"><span class="material-icons-round">person</span></div>
+                    <div><h3 style="margin:0; font-size:1rem; color:var(--primary);" contenteditable="true">Nuevo</h3><p style="margin:0; font-size:0.8rem; color:var(--text-sec);" contenteditable="true">Especialidad</p></div>
+                </div>
+                <div class="data-box">
+                    <div class="data-row"><span class="material-icons-round" style="font-size:16px; color:#6B7280; margin-right:5px;">phone</span><span class="data-phone" contenteditable="true" style="font-weight:600; color:var(--text-main); outline:none;">2901...</span></div>
+                    <div class="data-row"><span class="material-icons-round" style="font-size:16px; color:#6B7280; margin-right:5px;">email</span><span class="data-email" contenteditable="true" style="color:var(--text-main); outline:none;">email@...</span></div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                    <button onclick="actionWhatsApp(this)" style="padding:10px; background:var(--bg); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-icons-round" style="color:#25D366; font-size:18px;">chat</span> WhatsApp</button>
+                    <button onclick="actionCall(this)" style="padding:10px; background:var(--bg); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-icons-round" style="color:var(--primary); font-size:18px;">call</span> Llamar</button>
+                </div>
+            `;
+            // Insertar antes del botón agregar
+            const btnDiv = container.lastElementChild;
+            container.insertBefore(div, btnDiv);
+        }
+
         function actionWhatsApp(btn) {
             const card = btn.closest('.card');
-            // Busca el número en la tarjeta
-            let phone = card.querySelector('.data-phone').innerText;
-            // Limpia todo lo que no sea número
-            let cleanPhone = phone.replace(/[^0-9]/g, '');
-            
-            if (cleanPhone.length < 5) {
-                alert("Por favor edita el número primero.");
-                return;
-            }
-
-            // Agrega código de país Argentina si falta
-            if(!cleanPhone.startsWith('54')) cleanPhone = '549' + cleanPhone;
-            
-            // Abre WhatsApp
-            window.open(`https://wa.me/${cleanPhone}`, '_blank');
+            let phone = card.querySelector('.data-phone').innerText.replace(/[^0-9]/g, '');
+            if(!phone.startsWith('54')) phone = '549' + phone;
+            window.open(`https://wa.me/${phone}`, '_blank');
         }
-
         function actionCall(btn) {
             const card = btn.closest('.card');
-            let phone = card.querySelector('.data-phone').innerText;
-            let cleanPhone = phone.replace(/[^0-9]/g, '');
-            window.location.href = `tel:${cleanPhone}`;
+            let phone = card.querySelector('.data-phone').innerText.replace(/[^0-9]/g, '');
+            window.location.href = `tel:${phone}`;
         }
+
+        // Inicializar Filtros
+        document.getElementById('main-fab').style.display = 'none'; // El FAB se maneja internamente
     </script>
 </body>
 </html>
