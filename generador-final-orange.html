@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Icono Isa Vital - Final TDF</title>
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; text-align: center; background: #f0f2f5; padding: 40px; color: #1A2B48; }
+        .main-container { background: white; padding: 50px; border-radius: 30px; display: inline-block; box-shadow: 0 20px 60px rgba(0, 51, 153, 0.15); }
+        h1 { color: #003399; margin-bottom: 5px; font-weight: 800; }
+        p.sub { color: #FF6600; margin-bottom: 40px; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; letter-spacing: 1px;}
+        
+        .grid { display: flex; gap: 50px; justify-content: center; align-items: flex-end; flex-wrap: wrap;}
+        .item { display: flex; flex-direction: column; align-items: center; gap: 25px; }
+        
+        canvas { 
+            border-radius: 22%; 
+            box-shadow: 0 15px 35px rgba(0, 40, 120, 0.2); 
+            background: white;
+            transition: transform 0.3s ease;
+        }
+        canvas:hover { transform: translateY(-8px); }
+
+        .btn-download { 
+            padding: 15px 35px; 
+            background: linear-gradient(135deg, #FF6600, #FF8C00); /* Botón Naranja */
+            color: white; border: none; border-radius: 16px; 
+            font-size: 16px; font-weight: 700; cursor: pointer; text-decoration: none; 
+            display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 10px 20px rgba(255, 102, 0, 0.3);
+            transition: all 0.2s ease;
+        }
+        .btn-download:hover { transform: translateY(-3px); box-shadow: 0 15px 30px rgba(255, 102, 0, 0.4); }
+        .icon-label { font-weight: 700; color: #003399; font-size: 0.9rem; }
+    </style>
+</head>
+<body>
+
+    <div class="main-container">
+        <h1>Isa Vital</h1>
+        <p class="sub">Azul Profundo • Corazón de Fuego • Cristal 3D</p>
+
+        <div class="grid">
+            <div class="item">
+                <span class="icon-label">192px</span>
+                <canvas id="c192" width="192" height="192"></canvas>
+                <a id="d192" class="btn-download" download="icon-192.png">Descargar PNG</a>
+            </div>
+            <div class="item">
+                <span class="icon-label">512px</span>
+                <canvas id="c512" width="512" height="512"></canvas>
+                <a id="d512" class="btn-download" download="icon-512.png">Descargar HQ</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function drawSquircle(ctx, x, y, w, h, r) {
+            ctx.beginPath();
+            ctx.moveTo(x + r, y);
+            ctx.lineTo(x + w - r, y);
+            ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+            ctx.lineTo(x + w, y + h - r);
+            ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+            ctx.lineTo(x + r, y + h);
+            ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+            ctx.lineTo(x, y + r);
+            ctx.quadraticCurveTo(x, y, x + r, y);
+            ctx.closePath();
+        }
+
+        function generateIcon(canvasId, size) {
+            const canvas = document.getElementById(canvasId);
+            const ctx = canvas.getContext('2d');
+            const cx = size / 2;
+            const cy = size / 2;
+
+            // 1. BASE BLANCA
+            ctx.clearRect(0, 0, size, size);
+            ctx.fillStyle = "#FFFFFF";
+            drawSquircle(ctx, 0, 0, size, size, size * 0.22);
+            ctx.fill();
+            ctx.clip();
+
+            ctx.save();
+            ctx.translate(cx, cy);
+
+            // 2. GOTA AZUL (Cuerpo Principal)
+            const dropPath = new Path2D();
+            dropPath.moveTo(0, -size * 0.45); 
+            dropPath.bezierCurveTo(size * 0.6, size * 0.05, size * 0.4, size * 0.48, 0, size * 0.48);
+            dropPath.bezierCurveTo(-size * 0.4, size * 0.48, -size * 0.6, size * 0.05, 0, -size * 0.45);
+            dropPath.closePath();
+
+            let blueGrad = ctx.createLinearGradient(0, -size*0.5, 0, size*0.5);
+            blueGrad.addColorStop(0, "#0055DD"); 
+            blueGrad.addColorStop(1, "#002277"); 
+            ctx.fillStyle = blueGrad;
+            
+            // Sombra interna de la gota
+            ctx.shadowColor = "rgba(0, 10, 60, 0.4)";
+            ctx.shadowBlur = size * 0.06;
+            ctx.shadowOffsetY = size * 0.03;
+            ctx.fill(dropPath);
+            ctx.shadowColor = "transparent";
+
+            // 3. CORAZÓN NARANJA (El toque "TDF / Vital")
+            // Lo colocamos en la parte superior, flotando sobre la I
+            const heartScale = size * 0.0035; // Escala relativa
+            ctx.save();
+            ctx.translate(0, -size * 0.12); // Subimos el corazón
+            ctx.scale(heartScale, heartScale); 
+            
+            const heartPath = new Path2D("M0,-30 C-20,-55 -60,-35 -60,5 C-60,45 0,80 0,80 C0,80 60,45 60,5 C60,-35 20,-55 0,-30 Z");
+            
+            let orangeGrad = ctx.createLinearGradient(0, -50, 0, 80);
+            orangeGrad.addColorStop(0, "#FF8800"); // Naranja Luz
+            orangeGrad.addColorStop(1, "#FF4400"); // Naranja Fuego
+            ctx.fillStyle = orangeGrad;
+            
+            // Un pequeño resplandor naranja detrás del corazón
+            ctx.shadowColor = "rgba(255, 100, 0, 0.5)";
+            ctx.shadowBlur = 20;
+            ctx.fill(heartPath);
+            ctx.restore();
+
+
+            // 4. LETRA "I" BLANCA (El Pilar)
+            ctx.fillStyle = "#FFFFFF";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.font = "900 " + (size * 0.45) + "px sans-serif";
+            
+            // Sombra suave
+            ctx.shadowColor = "rgba(0,0,0,0.2)";
+            ctx.shadowBlur = size * 0.02;
+            ctx.shadowOffsetY = size * 0.01;
+            
+            // Bajamos un poco la I para que quede debajo del corazón
+            ctx.fillText("I", 0, size * 0.22); 
+
+
+            // 5. BRILLOS FINALES (Cristal)
+            // Brillo superior
+            ctx.globalCompositeOperation = "source-atop";
+            let shine = ctx.createLinearGradient(-size*0.3, -size*0.4, size*0.3, -size*0.1);
+            shine.addColorStop(0, "rgba(255, 255, 255, 0.8)");
+            shine.addColorStop(1, "rgba(255, 255, 255, 0.0)");
+            ctx.fillStyle = shine;
+            ctx.beginPath();
+            ctx.ellipse(-size*0.15, -size*0.25, size*0.2, size*0.12, Math.PI/6, 0, Math.PI*2);
+            ctx.fill();
+            
+            // Reflejo inferior
+            let reflection = ctx.createRadialGradient(0, size*0.4, 0, 0, size*0.4, size*0.3);
+            reflection.addColorStop(0, "rgba(100, 220, 255, 0.3)");
+            reflection.addColorStop(1, "rgba(0,0,0,0)");
+            ctx.fillStyle = reflection;
+            ctx.beginPath();
+            ctx.ellipse(0, size*0.4, size*0.3, size*0.15, 0, 0, Math.PI*2);
+            ctx.fill();
+
+            ctx.restore();
+        }
+
+        setTimeout(function() {
+            generateIcon('c192', 192);
+            generateIcon('c512', 512);
+            
+            setTimeout(function(){
+                 document.getElementById('d192').href = document.getElementById('c192').toDataURL('image/png');
+                 document.getElementById('d512').href = document.getElementById('c512').toDataURL('image/png');
+            }, 500);
+        }, 200);
+    </script>
+</body>
+</html>

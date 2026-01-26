@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#003399">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Isa Vital">
+    
+    <link rel="manifest" href="manifest.json">
+    
+    <link rel="apple-touch-icon" href="icon-192.png">
+
+    <title>Isa Vital | Sistema Integral</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+
+    <style>
+        :root {
+            /* Identidad TDF */
+            --primary: #003399;      /* Azul */
+            --accent: #FF6600;       /* Naranja */
+            --white: #FFFFFF;
+            --bg: #F0F2F5;
+            --text-main: #111827;
+            --text-sec: #6B7280;
+            
+            /* Semáforos */
+            --green-bg: #D1FAE5; --green-txt: #065F46;
+            --red-bg: #FEE2E2;   --red-txt: #991B1B;
+            --orange-bg: #FFEDD5; --orange-txt: #9A3412;
+            --blue-bg: #DBEAFE;  --blue-txt: #1E40AF;
+        }
+
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text-main);
+            padding-bottom: 90px; /* Espacio para el menú inferior */
+            overscroll-behavior-y: none; /* Evitar rebote en iOS */
+        }
+
+        /* --- HEADER --- */
+        header {
+            background: var(--white);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: 0 1px 10px rgba(0,0,0,0.05);
+            display: flex; justify-content: space-between; align-items: center;
+            padding-top: max(15px, env(safe-area-inset-top)); /* Notch support */
+        }
+        .logo { font-size: 1.2rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px;}
+        .logo span { color: var(--accent); }
+        .user-pic { width: 32px; height: 32px; background: #E0E7FF; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: bold; font-size: 0.8rem;}
+
+        /* --- CONTENEDORES --- */
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; display: none; animation: fadeIn 0.3s; }
+        .container.active { display: block; }
+
+        /* --- TARJETAS UNIVERSALES --- */
+        .card {
+            background: var(--white);
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.03);
+            position: relative;
+        }
+
+        /* --- ESTILOS: INVENTARIO (TAB 1) --- */
+        .inv-row { display: flex; justify-content: space-between; align-items: center; }
+        .inv-info h3 { margin: 0 0 4px 0; font-size: 0.95rem; color: var(--primary); }
+        .inv-info p { margin: 0; font-size: 0.75rem; color: var(--text-sec); }
+        
+        .inv-controls { display: flex; align-items: center; gap: 10px; background: #F3F4F6; padding: 4px; border-radius: 12px; }
+        .inv-btn { width: 28px; height: 28px; border: none; background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: bold; cursor: pointer; }
+        .inv-val { font-weight: 700; width: 30px; text-align: center; font-size: 0.9rem; border: none; background: transparent; }
+
+        /* --- ESTILOS: GESTIÓN/PEDIDOS (TAB 2) --- */
+        .order-card { border-left: 4px solid transparent; }
+        .order-card.osef { border-left-color: var(--accent); }
+        .order-card.pfa { border-left-color: var(--primary); }
+        .order-card.reintegro { border-left-color: #10B981; }
+
+        .tag { padding: 3px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; display: inline-block; margin-bottom: 6px;}
+        .tag.osef { background: var(--orange-bg); color: var(--orange-txt); }
+        .tag.pfa { background: var(--blue-bg); color: var(--blue-txt); }
+        .tag.money { background: var(--green-bg); color: var(--green-txt); }
+
+        .order-status {
+            margin-top: 10px; padding-top: 10px; border-top: 1px dashed #E5E7EB;
+            display: flex; justify-content: space-between; align-items: center;
+        }
+        .status-btn {
+            background: none; border: 1px solid #D1D5DB; padding: 6px 12px; border-radius: 20px;
+            font-size: 0.75rem; font-weight: 600; color: var(--text-sec); display: flex; align-items: center; gap: 5px;
+        }
+        .status-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+
+        /* --- ESTILOS: EQUIPO (TAB 3) --- */
+        .medic-header { display: flex; gap: 15px; align-items: center; margin-bottom: 10px; }
+        .medic-avatar { width: 50px; height: 50px; background: #EEF2FF; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+        .contact-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        .btn-contact {
+            background: var(--bg); border: none; padding: 8px; border-radius: 8px;
+            font-size: 0.8rem; font-weight: 600; color: var(--text-main);
+            display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
+        }
+
+        /* --- NAVEGACIÓN INFERIOR --- */
+        .bottom-nav {
+            position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.95);
+            backdrop-filter: blur(10px); border-top: 1px solid #E5E7EB;
+            display: flex; justify-content: space-around; padding: 10px 0 20px 0; z-index: 100;
+            padding-bottom: max(20px, env(safe-area-inset-bottom)); /* iOS Home Bar fix */
+        }
+        .nav-item {
+            border: none; background: none; display: flex; flex-direction: column; align-items: center;
+            color: #9CA3AF; font-size: 0.7rem; gap: 4px; cursor: pointer; transition: 0.2s;
+        }
+        .nav-item.active { color: var(--primary); }
+        .nav-item.active span.material-icons-round { transform: translateY(-2px); }
+
+        /* FAB (Botón Flotante) */
+        .fab {
+            position: fixed; bottom: 90px; right: 20px;
+            background: var(--accent); color: white; width: 50px; height: 50px;
+            border-radius: 50%; border: none; box-shadow: 0 4px 15px rgba(255,102,0,0.4);
+            display: flex; align-items: center; justify-content: center; z-index: 90;
+            margin-bottom: env(safe-area-inset-bottom);
+        }
+
+        [contenteditable]:focus { background: #FFF7ED; outline: none; padding: 2px; }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+    </style>
+</head>
+<body>
+
+    <header>
+        <div class="logo">
+            <span class="material-icons-round" style="color:var(--accent); margin-right:5px;">favorite</span>
+            Isa<span>Vital</span>
+        </div>
+        <div class="user-pic">IG</div>
+    </header>
+
+    <div id="tab-stock" class="container active">
+        <h4 style="margin: 10px 0; color: var(--text-sec); font-size: 0.8rem; text-transform: uppercase;">Bomba de Insulina & CGM</h4>
+        
+        <div class="card">
+            <div class="inv-row">
+                <div class="inv-info">
+                    <h3 contenteditable="true">Sensores Guardian 3</h3>
+                    <p contenteditable="true">MMT-7020 (Cambio cada 7 días)</p>
+                </div>
+                <div class="inv-controls">
+                    <button class="inv-btn" onclick="updateStock(this, -1)">-</button>
+                    <input type="number" class="inv-val" value="2">
+                    <button class="inv-btn" onclick="updateStock(this, 1)">+</button>
+                </div>
+            </div>
+            <div style="margin-top: 10px; text-align: right;">
+                <button onclick="quickOrder('OSEF', 'Sensores Guardian 3')" style="font-size:0.75rem; color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer;">
+                    ¿Falta poco? Pedir a OSEF &rarr;
+                </button>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="inv-row">
+                <div class="inv-info">
+                    <h3 contenteditable="true">Reservorios 3.0ml</h3>
+                    <p contenteditable="true">MMT-332 (Cajas x 10)</p>
+                </div>
+                <div class="inv-controls">
+                    <button class="inv-btn" onclick="updateStock(this, -1)">-</button>
+                    <input type="number" class="inv-val" value="5">
+                    <button class="inv-btn" onclick="updateStock(this, 1)">+</button>
+                </div>
+            </div>
+        </div>
+
+        <h4 style="margin: 20px 0 10px 0; color: var(--text-sec); font-size: 0.8rem; text-transform: uppercase;">Medicación Diaria</h4>
+        
+        <div class="card">
+            <div class="inv-row">
+                <div class="inv-info">
+                    <h3 contenteditable="true">Insulina Aspártica</h3>
+                    <p contenteditable="true">Viales / Lapiceras</p>
+                </div>
+                <div class="inv-controls">
+                    <button class="inv-btn" onclick="updateStock(this, -1)">-</button>
+                    <input type="number" class="inv-val" value="3">
+                    <button class="inv-btn" onclick="updateStock(this, 1)">+</button>
+                </div>
+            </div>
+        </div>
+        
+         <div class="card">
+            <div class="inv-row">
+                <div class="inv-info">
+                    <h3 contenteditable="true">Levotiroxina 125mg</h3>
+                    <p contenteditable="true">1 comprimido diario</p>
+                </div>
+                <div class="inv-controls">
+                    <button class="inv-btn" onclick="updateStock(this, -1)">-</button>
+                    <input type="number" class="inv-val" value="1">
+                    <button class="inv-btn" onclick="updateStock(this, 1)">+</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card">
+            <div class="inv-row">
+                <div class="inv-info">
+                    <h3 contenteditable="true">Tiras Glucosa/Cetonas</h3>
+                    <p contenteditable="true">Control diario</p>
+                </div>
+                <div class="inv-controls">
+                    <button class="inv-btn" onclick="updateStock(this, -1)">-</button>
+                    <input type="number" class="inv-val" value="100">
+                    <button class="inv-btn" onclick="updateStock(this, 1)">+</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-gestion" class="container">
+        <div style="display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px;">
+            <span class="tag osef" style="padding: 6px 12px; font-size: 0.75rem;">OSEF</span>
+            <span class="tag pfa" style="padding: 6px 12px; font-size: 0.75rem;">PFA</span>
+            <span class="tag money" style="padding: 6px 12px; font-size: 0.75rem;">Reintegros</span>
+        </div>
+
+        <div id="orders-list">
+            <div class="card order-card osef">
+                <div style="display:flex; justify-content:space-between;">
+                    <span class="tag osef">OSEF TDF</span>
+                    <span style="font-size:0.7rem; color:#666;" contenteditable="true">Exp: 4420-A</span>
+                </div>
+                <h3 style="margin: 5px 0; font-size: 1rem;" contenteditable="true">Pedido Mensual Sensores</h3>
+                <p style="font-size: 0.8rem; color: #666; margin:0;" contenteditable="true">Ingresado el 20/01</p>
+                <div class="order-status">
+                    <button class="status-btn" onclick="setStatus(this)">Iniciado</button>
+                    <button class="status-btn active" onclick="setStatus(this)">Auditoría</button>
+                    <button class="status-btn" onclick="setStatus(this)">Retirar</button>
+                </div>
+            </div>
+
+            <div class="card order-card pfa">
+                <div style="display:flex; justify-content:space-between;">
+                    <span class="tag pfa">Policía Federal</span>
+                    <span style="font-size:0.7rem; color:#666;" contenteditable="true">Receta Digital</span>
+                </div>
+                <h3 style="margin: 5px 0; font-size: 1rem;" contenteditable="true">Tiras Reactivas + Agujas</h3>
+                <div class="order-status">
+                    <button class="status-btn" onclick="setStatus(this)">Enviado</button>
+                    <button class="status-btn" onclick="setStatus(this)">Autorizado</button>
+                    <button class="status-btn active" style="background:#dcfce7; color:#166534; border-color:transparent;" onclick="setStatus(this)">Retirado</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="tab-equipo" class="container">
+        <div class="card">
+            <div class="medic-header">
+                <div class="medic-avatar"><span class="material-icons-round">medical_services</span></div>
+                <div>
+                    <h3 style="margin:0; font-size:1rem; color:var(--primary);" contenteditable="true">Dra. Endocrinóloga</h3>
+                    <p style="margin:0; font-size:0.8rem; color:var(--text-sec);" contenteditable="true">Hosp. Regional Ushuaia</p>
+                </div>
+            </div>
+            <div class="contact-actions">
+                <button class="btn-contact"><span class="material-icons-round" style="font-size:16px; color:#25D366;">chat</span> WhatsApp</button>
+                <button class="btn-contact"><span class="material-icons-round" style="font-size:16px; color:var(--primary);">call</span> Llamar</button>
+            </div>
+        </div>
+        
+        <div style="text-align:center; margin-top:20px;">
+            <button onclick="addMedic()" style="background:none; border:2px dashed #ccc; padding:10px 20px; border-radius:12px; color:#666; font-weight:600;">+ Agregar Profesional</button>
+        </div>
+    </div>
+
+    <button class="fab" id="main-fab" onclick="addOrder()">
+        <span class="material-icons-round">add</span>
+    </button>
+
+    <nav class="bottom-nav">
+        <button class="nav-item active" onclick="switchTab('tab-stock', this)">
+            <span class="material-icons-round">inventory_2</span> Stock
+        </button>
+        <button class="nav-item" onclick="switchTab('tab-gestion', this)">
+            <span class="material-icons-round">assignment</span> Gestión
+        </button>
+        <button class="nav-item" onclick="switchTab('tab-equipo', this)">
+            <span class="material-icons-round">contacts</span> Equipo
+        </button>
+    </nav>
+
+    <script>
+        // NAVEGACIÓN
+        function switchTab(tabId, btn) {
+            document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
+            document.getElementById(tabId).classList.add('active');
+            document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+            btn.classList.add('active');
+
+            const fab = document.getElementById('main-fab');
+            if (tabId === 'tab-gestion') {
+                fab.style.display = 'flex';
+                fab.setAttribute('onclick', 'addOrder()');
+            } else if (tabId === 'tab-stock') {
+                fab.style.display = 'flex';
+                fab.setAttribute('onclick', 'alert("Para agregar un medicamento nuevo, edita uno existente o contacta al admin.")');
+            } else {
+                fab.style.display = 'none';
+            }
+            window.scrollTo(0,0);
+        }
+
+        // LÓGICA STOCK
+        function updateStock(btn, amount) {
+            const input = btn.parentElement.querySelector('input');
+            let val = parseInt(input.value);
+            val += amount;
+            if (val < 0) val = 0;
+            input.value = val;
+        }
+
+        // BRIDGE STOCK -> GESTIÓN
+        function quickOrder(tipo, producto) {
+            if(confirm(`¿Quieres generar un pedido en ${tipo} para: ${producto}?`)) {
+                const gestionBtn = document.querySelectorAll('.nav-item')[1];
+                switchTab('tab-gestion', gestionBtn);
+                
+                const container = document.getElementById('orders-list');
+                const div = document.createElement('div');
+                div.className = `card order-card ${tipo.toLowerCase()}`;
+                div.style.animation = "fadeIn 0.5s";
+                
+                let tagClass = (tipo === 'OSEF') ? 'osef' : 'pfa';
+                
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between;">
+                        <span class="tag ${tagClass}">${tipo}</span>
+                        <span style="font-size:0.7rem; color:#666;" contenteditable="true">Nuevo</span>
+                    </div>
+                    <h3 style="margin: 5px 0; font-size: 1rem;" contenteditable="true">${producto}</h3>
+                    <p style="font-size: 0.8rem; color: #666; margin:0;">Generado hoy</p>
+                    <div class="order-status">
+                        <button class="status-btn active" onclick="setStatus(this)">A Pedir</button>
+                        <button class="status-btn" onclick="setStatus(this)">En Proceso</button>
+                        <button class="status-btn" onclick="setStatus(this)">Listo</button>
+                    </div>
+                `;
+                container.prepend(div);
+            }
+        }
+
+        function addOrder() { quickOrder('OSEF', 'Nuevo Insumo...'); }
+
+        // ESTADOS
+        function setStatus(btn) {
+            const siblings = btn.parentElement.querySelectorAll('.status-btn');
+            siblings.forEach(s => s.classList.remove('active'));
+            btn.classList.add('active');
+        }
+
+        // MÉDICOS
+        function addMedic() {
+            const container = document.getElementById('tab-equipo');
+            const div = document.createElement('div');
+            div.className = 'card';
+            div.innerHTML = `
+                <div class="medic-header">
+                    <div class="medic-avatar"><span class="material-icons-round">person</span></div>
+                    <div><h3 style="margin:0; font-size:1rem; color:var(--primary);" contenteditable="true">Nuevo</h3><p style="margin:0; font-size:0.8rem; color:var(--text-sec);" contenteditable="true">Especialidad</p></div>
+                </div>
+                <div class="contact-actions"><button class="btn-contact">Teléfono</button><button class="btn-contact">Email</button></div>
+            `;
+            container.insertBefore(div, container.lastElementChild);
+        }
+
+        // INICIALIZACIÓN
+        document.getElementById('main-fab').style.display = 'flex';
+        document.getElementById('main-fab').setAttribute('onclick', 'alert("Usa los botones +/- para controlar stock.")');
+    </script>
+</body>
+</html>
