@@ -6,297 +6,129 @@
     <meta name="theme-color" content="#003399">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <title>Isa Vital | Gestión T1D</title>
+    <title>Isa Vital | Cloud</title>
     
     <link rel="manifest" href="manifest.json">
     <link rel="apple-touch-icon" href="icon-192.png">
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
+        /* ESTILOS (Mismo diseño Isa Vital 4.0) */
         :root {
-            /* Identidad TDF */
-            --primary: #003399; --accent: #FF6600; 
-            --white: #FFFFFF; --bg: #F0F2F5;
+            --primary: #003399; --accent: #FF6600; --white: #FFFFFF; --bg: #F0F2F5;
             --text-main: #111827; --text-sec: #6B7280;
-            
-            /* Colores Categorías */
-            --cat-osef-bg: #FFF7ED; --cat-osef-txt: #9A3412; 
-            --cat-pfa-bg: #EFF6FF; --cat-pfa-txt: #1E40AF;  
-            --cat-money-bg: #ECFDF5; --cat-money-txt: #065F46; 
-            --cat-alert-bg: #FEF2F2; --cat-alert-txt: #991B1B; 
+            --tag-osef-bg: #FFF7ED; --tag-osef-txt: #9A3412;
+            --tag-pfa-bg: #EFF6FF; --tag-pfa-txt: #1E40AF;
+            --tag-money-bg: #ECFDF5; --tag-money-txt: #065F46;
+            --tag-alert-bg: #FEF2F2; --tag-alert-txt: #991B1B;
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 95px; overscroll-behavior-y: none; user-select: none;}
+        body { font-family: 'Inter', sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 95px; overscroll-behavior-y: none; user-select: none; }
 
-        /* HEADER */
         header { background: var(--white); padding: 15px 20px; position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; padding-top: max(15px, env(safe-area-inset-top)); }
-        .logo { font-size: 1.3rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px;}
+        .logo { font-size: 1.3rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; }
         .logo span { color: var(--accent); }
+        .status-dot { width: 10px; height: 10px; background: #ccc; border-radius: 50%; transition: background 0.3s; }
+        .status-dot.online { background: #10B981; box-shadow: 0 0 5px #10B981; }
 
-        /* CONTENEDORES */
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; display: none; animation: fadeIn 0.3s ease-out; }
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; display: none; animation: fadeIn 0.3s; }
         .container.active { display: block; }
         .card { background: var(--white); border-radius: 18px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.04); }
 
-        /* --- ESTILOS STOCK --- */
-        .section-title { margin: 20px 0 10px 5px; color: var(--text-sec); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
+        /* STOCK */
         .inv-row { display: flex; justify-content: space-between; align-items: center; }
-        .inv-info h3 { margin: 0 0 4px 0; font-size: 0.95rem; color: var(--primary); }
-        .inv-info p { margin: 0; font-size: 0.75rem; color: var(--text-sec); }
         .inv-controls { display: flex; align-items: center; gap: 8px; background: #F3F4F6; padding: 4px; border-radius: 12px; }
-        .inv-btn { width: 32px; height: 32px; border: none; background: white; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: bold; cursor: pointer; }
-        .inv-val { font-weight: 700; width: 35px; text-align: center; font-size: 1rem; border: none; background: transparent; }
+        .inv-btn { width: 32px; height: 32px; border: none; background: white; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-weight: bold; color: var(--primary); display:flex; align-items:center; justify-content:center;}
+        .inv-val { font-weight: 700; width: 35px; text-align: center; border:none; background:transparent; font-size: 1rem; }
 
-        /* --- ESTILOS GESTIÓN (FILTROS) --- */
+        /* GESTIÓN */
         .filter-bar { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
-        .filter-bar::-webkit-scrollbar { display: none; } 
         .filter-btn { border: 1px solid #E5E7EB; background: white; padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-sec); white-space: nowrap; cursor: pointer; transition: all 0.2s; }
-        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(0, 51, 153, 0.2); }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        
+        .tag { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-block; margin-bottom: 8px;}
+        .tag.osef { background: var(--tag-osef-bg); color: var(--tag-osef-txt); }
+        .tag.pfa { background: var(--tag-pfa-bg); color: var(--tag-pfa-txt); }
+        .tag.reintegro { background: var(--tag-money-bg); color: var(--tag-money-txt); }
+        .tag.reclamo { background: var(--tag-alert-bg); color: var(--tag-alert-txt); }
 
-        /* Tarjetas de Pedido */
-        .order-card { border-left: 5px solid transparent; transition: transform 0.2s; }
+        .order-card { border-left: 4px solid transparent; }
         .order-card.osef { border-left-color: var(--accent); }
         .order-card.pfa { border-left-color: var(--primary); }
         .order-card.reintegro { border-left-color: #10B981; }
-        .order-card.reclamo { border-left-color: #EF4444; background: #FFF5F5; }
+        .order-card.reclamo { border-left-color: #EF4444; }
 
-        .tag { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-block; margin-bottom: 8px;}
-        .tag.osef { background: var(--cat-osef-bg); color: var(--cat-osef-txt); }
-        .tag.pfa { background: var(--cat-pfa-bg); color: var(--cat-pfa-txt); }
-        .tag.money { background: var(--cat-money-bg); color: var(--cat-money-txt); }
-        .tag.alert { background: var(--cat-alert-bg); color: var(--cat-alert-txt); }
-
-        .order-status { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #E5E7EB; display: flex; justify-content: space-between; }
-        .status-btn { background: none; border: 1px solid #D1D5DB; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; color: var(--text-sec); transition: all 0.2s; }
-        .status-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 2px 5px rgba(0, 51, 153, 0.2); }
-        
-        /* Reintegros Detalles */
-        .reintegro-details { background: #ECFDF5; padding: 10px; border-radius: 10px; font-size: 0.85rem; color: #064E3B; margin-top: 8px; }
-        .reintegro-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .input-dashed { border: none; border-bottom: 1px dashed #059669; background: transparent; width: 60%; text-align: right; color: #065F46; outline: none; }
-
-        /* --- AGENDA & ARCHIVOS --- */
+        /* AGENDA */
         .turn-item { display: flex; align-items: center; gap: 15px; }
         .turn-date { background: #EEF2FF; color: var(--primary); padding: 8px 12px; border-radius: 12px; text-align: center; min-width: 60px; }
         .turn-day { font-size: 1.2rem; font-weight: 700; display: block; line-height: 1; }
         .turn-month { font-size: 0.7rem; text-transform: uppercase; font-weight: 600; }
-        .file-row { display: flex; align-items: center; padding: 12px 0; border-bottom: 1px solid #eee; }
-        .file-icon { width: 40px; height: 40px; background: #FFF7ED; color: var(--accent); border-radius: 10px; display: flex; align-items: center; justify-content: center; margin-right: 12px; }
 
-        /* --- EQUIPO --- */
-        .medic-header { display: flex; gap: 15px; align-items: center; margin-bottom: 12px; }
-        .data-box { background:#F9FAFB; padding:10px; border-radius:10px; margin-bottom:10px; border:1px solid #eee; }
-        .data-row { display:flex; align-items:center; margin-bottom:8px; font-size: 0.85rem;}
-
-        /* NAV & FAB */
+        /* NAV & MODAL */
         .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.98); border-top: 1px solid #E5E7EB; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; padding-bottom: max(15px, env(safe-area-inset-bottom)); }
-        .nav-item { border: none; background: none; display: flex; flex-direction: column; align-items: center; color: #9CA3AF; font-size: 0.65rem; gap: 5px; cursor: pointer; width: 25%; }
+        .nav-item { border: none; background: none; display: flex; flex-direction: column; align-items: center; color: #9CA3AF; font-size: 0.65rem; gap: 4px; cursor: pointer; width: 25%; }
         .nav-item.active { color: var(--primary); }
         .nav-item.active span.material-icons-round { color: var(--accent); transform: translateY(-2px); }
 
-        .fab { position: fixed; bottom: 95px; right: 20px; background: var(--accent); color: white; width: 56px; height: 56px; border-radius: 50%; border: none; box-shadow: 0 4px 15px rgba(255,102,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 90; margin-bottom: env(safe-area-inset-bottom); cursor: pointer; transition: transform 0.2s; }
-        .fab:active { transform: scale(0.95); }
-
-        /* MODAL SELECTOR */
         .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
         .modal-box { background: white; width: 85%; max-width: 320px; padding: 25px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; }
         .modal-btn { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
-
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+        
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
 </head>
 <body>
 
     <header>
         <div class="logo"><span class="material-icons-round" style="color:var(--accent);">favorite</span>Isa<span>Vital</span></div>
-        <div style="width:32px; height:32px; background:#EEF2FF; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary); font-weight:bold; font-size:0.8rem;">IG</div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <div id="connectionStatus" class="status-dot"></div>
+            <div style="width:32px; height:32px; background:#EEF2FF; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary); font-weight:bold; font-size:0.8rem;">IG</div>
+        </div>
     </header>
 
     <div id="tab-stock" class="container active">
-        
-        <h4 class="section-title">Bomba de Insulina (OSEF)</h4>
-        
-        <div class="card">
-            <div class="inv-row">
-                <div class="inv-info"><h3 contenteditable="true">Reservorios 3.0ml</h3><p contenteditable="true">MMT-332 (Cajas x 10)</p></div>
-                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="5"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
-            </div>
-            <div style="text-align:right; margin-top:10px;"><button onclick="openProviderModal('Reservorios MMT-332')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button></div>
-        </div>
-
-        <div class="card">
-            <div class="inv-row">
-                <div class="inv-info"><h3 contenteditable="true">Set Infusión</h3><p contenteditable="true">MMT-327 (Cajas x 10)</p></div>
-                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="4"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
-            </div>
-            <div style="text-align:right; margin-top:10px;"><button onclick="openProviderModal('Set Infusión MMT-327')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button></div>
-        </div>
-
-        <div class="card">
-            <div class="inv-row">
-                <div class="inv-info"><h3 contenteditable="true">Sensores Guardian 3</h3><p contenteditable="true">MMT 7020 (Unidades)</p></div>
-                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="2"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
-            </div>
-            <div style="text-align:right; margin-top:10px;"><button onclick="openProviderModal('Sensores Guardian 3')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button></div>
-        </div>
-
-        <h4 class="section-title">Medicación (PFA/Farmacia)</h4>
-        
-        <div class="card">
-            <div class="inv-row">
-                <div class="inv-info"><h3 contenteditable="true">Insulina Aspártica</h3><p contenteditable="true">Viales / Lapiceras</p></div>
-                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="3"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
-            </div>
-             <div style="text-align:right; margin-top:10px;"><button onclick="openProviderModal('Insulina Aspártica')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button></div>
-        </div>
-        
-        <div class="card">
-            <div class="inv-row">
-                <div class="inv-info"><h3 contenteditable="true">Levotiroxina 125mg</h3><p contenteditable="true">Caja (Comprimidos)</p></div>
-                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="1"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
-            </div>
-            <div style="text-align:right; margin-top:10px;"><button onclick="openProviderModal('Levotiroxina')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button></div>
-        </div>
-        
-        <div class="card">
-            <div class="inv-row">
-                <div class="inv-info"><h3 contenteditable="true">Tiras Glucosa</h3><p contenteditable="true">Control diario</p></div>
-                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -10)">-</button><input type="number" class="inv-val" value="100"><button class="inv-btn" onclick="updateStock(this, 10)">+</button></div>
-            </div>
-        </div>
-
-        <div class="card">
-            <div class="inv-row">
-                <div class="inv-info"><h3 contenteditable="true">Tiras Cetonas</h3><p contenteditable="true">Orina / Sangre</p></div>
-                <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="25"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
-            </div>
-        </div>
-        
-        <div style="text-align:center; margin-top:20px;">
-             <button onclick="addNewItem()" style="background:none; border:2px dashed #ccc; padding:12px 20px; border-radius:12px; color:#666; font-weight:600;">+ Agregar Otro Insumo</button>
+        <h4 style="color:var(--text-sec); font-size:0.75rem; margin:15px 5px; font-weight:700;">INSUMOS T1D</h4>
+        <div id="stock-list">
+            <div style="text-align:center; padding:20px; color:#999;">Cargando stock de la nube...</div>
         </div>
     </div>
 
     <div id="tab-gestion" class="container">
-        
         <div class="filter-bar">
             <button class="filter-btn active" onclick="filterGestion('all', this)">Todos</button>
             <button class="filter-btn" onclick="filterGestion('osef', this)">OSEF</button>
             <button class="filter-btn" onclick="filterGestion('pfa', this)">PFA</button>
             <button class="filter-btn" onclick="filterGestion('reintegro', this)">Reintegros</button>
-            <button class="filter-btn" style="color:var(--cat-alert-txt); border-color:#FECACA;" onclick="filterGestion('reclamo', this)">Reclamos</button>
+            <button class="filter-btn" style="color:var(--tag-alert-txt); border-color:#FECACA;" onclick="filterGestion('reclamo', this)">Reclamos</button>
         </div>
-
-        <button onclick="addReintegro()" style="width:100%; padding:10px; margin-bottom:15px; border:2px dashed #10B981; color:#10B981; background:#F0FDF4; border-radius:12px; font-weight:600; cursor:pointer;">+ Nuevo Gasto / Reintegro</button>
+        
+        <button onclick="addReintegroUI()" style="width:100%; padding:10px; margin-bottom:15px; border:2px dashed #10B981; color:#10B981; background:#F0FDF4; border-radius:12px; font-weight:600; cursor:pointer;">+ Nuevo Gasto / Reintegro</button>
 
         <div id="orders-list">
-            
-            <div class="card order-card reintegro" data-cat="reintegro">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <span class="tag money">Reintegro</span>
-                    <div style="text-align:right;">
-                        <span style="font-size:0.6rem; color:#666; display:block;">Costo</span>
-                        <span style="font-weight:bold; color:#059669; font-size:0.9rem;" contenteditable="true">$ 25.000</span>
-                    </div>
-                </div>
-                <h3 style="margin: 5px 0 2px 0; font-size: 1rem;" contenteditable="true">Consulta Dra. Perez</h3>
-                <div class="reintegro-details">
-                    <div class="reintegro-row"><span>🧾 Factura:</span><span contenteditable="true" class="input-dashed">Pendiente</span></div>
-                    <div class="reintegro-row"><span>📝 Receta:</span><span contenteditable="true" class="input-dashed">Si</span></div>
-                </div>
-                <div class="order-status">
-                    <button class="status-btn active" style="background:#ECFDF5; color:#065F46; border-color:transparent;" onclick="setStatus(this)">A Presentar</button>
-                    <button class="status-btn" onclick="setStatus(this)">Presentado</button>
-                    <button class="status-btn" onclick="setStatus(this)">Cobrado</button>
-                </div>
-            </div>
-
-            <div class="card order-card osef" data-cat="osef">
-                <div style="display:flex; justify-content:space-between;">
-                    <span class="tag osef">OSEF</span>
-                    <span style="font-size:0.7rem; color:#666;">Ayer</span>
-                </div>
-                <h3 style="margin:5px 0; font-size:1rem;">Pedido Mensual Sensores</h3>
-                <div class="order-status">
-                    <button class="status-btn" onclick="setStatus(this)">Iniciado</button>
-                    <button class="status-btn active" onclick="setStatus(this)">Auditoría</button>
-                    <button class="status-btn" onclick="setStatus(this)">Listo</button>
-                </div>
-            </div>
-            
-            <div class="card order-card reclamo" data-cat="reclamo">
-                <div style="display:flex; justify-content:space-between;">
-                    <span class="tag alert">Reclamo</span>
-                    <span style="font-size:0.7rem; color:#991B1B; font-weight:bold;">URGENTE</span>
-                </div>
-                <h3 style="margin: 5px 0; font-size: 1rem;">Faltante Agujas</h3>
-                <div class="order-status">
-                    <button class="status-btn active" style="background:#FEE2E2; color:#991B1B; border-color:transparent;">En Curso</button>
-                    <button class="status-btn">Resuelto</button>
-                </div>
-            </div>
-
+             <div style="text-align:center; padding:20px; color:#999;">Cargando pedidos...</div>
         </div>
     </div>
 
     <div id="tab-agenda" class="container">
         <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h4 class="section-title" style="margin:0;">PRÓXIMOS TURNOS</h4>
-            <button onclick="addTurno()" style="color:var(--primary); font-weight:700; background:none; border:none;">+ Agendar</button>
+            <h4 style="margin:0; color:var(--text-sec); font-size:0.75rem; font-weight:700;">PRÓXIMOS TURNOS</h4>
+            <button onclick="addTurnoUI()" style="color:var(--primary); font-weight:700; background:none; border:none;">+ Agendar</button>
         </div>
-
         <div id="turnos-list">
-            <div class="card turn-item">
-                <div class="turn-date" contenteditable="true">
-                    <span class="turn-day">14</span>
-                    <span class="turn-month">FEB</span>
-                </div>
-                <div>
-                    <h3 style="margin:0; font-size:1rem; color:var(--text-main);" contenteditable="true">Endocrinóloga</h3>
-                    <p style="margin:0; font-size:0.8rem; color:var(--text-sec);" contenteditable="true">17:30 hs • Hosp. Regional</p>
-                </div>
-            </div>
-        </div>
-
-        <div style="display:flex; justify-content:space-between; align-items:center; margin:30px 0 10px 0;">
-            <h4 class="section-title" style="margin:0;">HISTORIA CLÍNICA</h4>
-            <button onclick="document.getElementById('fileInput').click()" style="color:var(--accent); font-weight:700; background:none; border:none;">+ Subir PDF/Foto</button>
-            <input type="file" id="fileInput" hidden onchange="uploadFileFake(this)">
-        </div>
-
-        <div id="files-list" class="card" style="padding:0 15px;">
-            <div class="file-row">
-                <div class="file-icon"><span class="material-icons-round">picture_as_pdf</span></div>
-                <div style="flex:1">
-                    <div style="font-weight:600; font-size:0.9rem;" contenteditable="true">Laboratorio_Enero.pdf</div>
-                    <div style="font-size:0.75rem; color:#999;" contenteditable="true">Hemoglobina Glicosilada</div>
-                </div>
-            </div>
+             <div style="text-align:center; padding:20px; color:#999;">Cargando agenda...</div>
         </div>
     </div>
 
     <div id="tab-equipo" class="container">
-        <div class="card">
-            <div class="medic-header">
-                <div style="width:48px; height:48px; background:#EEF2FF; border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--primary);"><span class="material-icons-round">medical_services</span></div>
-                <div><h3 style="margin:0; font-size:1rem; color:var(--primary);" contenteditable="true">Dra. Endocrinóloga</h3><p style="margin:0; font-size:0.8rem; color:var(--text-sec);" contenteditable="true">Hosp. Regional Ushuaia</p></div>
-            </div>
-            
-            <div class="data-box">
-                <div class="data-row"><span class="material-icons-round" style="font-size:16px; color:#6B7280; margin-right:5px;">phone</span><span class="data-phone" contenteditable="true" style="font-weight:600; color:var(--text-main); outline:none;">2901 601234</span></div>
-                <div class="data-row"><span class="material-icons-round" style="font-size:16px; color:#6B7280; margin-right:5px;">email</span><span class="data-email" contenteditable="true" style="color:var(--text-main); outline:none;">doctora@email.com</span></div>
-            </div>
-
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                <button onclick="actionWhatsApp(this)" style="padding:10px; background:var(--bg); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-icons-round" style="color:#25D366; font-size:18px;">chat</span> WhatsApp</button>
-                <button onclick="actionCall(this)" style="padding:10px; background:var(--bg); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-icons-round" style="color:var(--primary); font-size:18px;">call</span> Llamar</button>
-            </div>
-        </div>
-        <div style="text-align:center; margin-top:20px;">
-            <button onclick="addMedic()" style="background:none; border:2px dashed #ccc; padding:12px 20px; border-radius:12px; color:#666; font-weight:600;">+ Agregar Profesional</button>
+        <h4 style="color:var(--text-sec); font-size:0.75rem; margin:15px 5px; font-weight:700;">DIRECTORIO MÉDICO</h4>
+        <div id="medicos-list">
+            <div style="text-align:center; padding:20px; color:#999;">Cargando equipo...</div>
         </div>
     </div>
 
@@ -304,7 +136,6 @@
         <div class="modal-box">
             <h3 style="margin-top:0;">¿Para quién es el pedido?</h3>
             <p id="modalItemName" style="color:#666; font-size:0.9rem; margin-bottom:20px; font-weight:bold;">Insumo</p>
-            
             <button class="modal-btn" style="background:#FFF7ED; color:#9A3412;" onclick="confirmOrder('OSEF')"><span class="material-icons-round">local_pharmacy</span> OSEF TDF</button>
             <button class="modal-btn" style="background:#EFF6FF; color:#1E40AF;" onclick="confirmOrder('PFA')"><span class="material-icons-round">security</span> Policía Federal</button>
             <button class="modal-btn" style="background:#F3F4F6; color:#374151;" onclick="closeModal()">Cancelar</button>
@@ -319,204 +150,231 @@
     </nav>
 
     <script>
-        // 1. NAVEGACIÓN
+        // === 1. CONFIGURACIÓN SUPABASE ===
+        const SUPABASE_URL = 'https://bypjrmgemgboivfbnxgi.supabase.co';
+        const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cGpybWdlbWdib2l2ZmJueGdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4Mjg0MzAsImV4cCI6MjA4MzQwNDQzMH0.EuzWicGSNSMbzIPwoQW1iSMc8BLhmdQPOZoNhf7bW1U';
+        const { createClient } = supabase;
+        const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+
+        // === 2. INICIO Y CARGA DE DATOS ===
+        async function loadData() {
+            // Indicador Online
+            document.getElementById('connectionStatus').classList.add('online');
+
+            // Cargar Stock
+            const { data: stock } = await db.from('insumos').select('*').order('id');
+            renderStock(stock);
+
+            // Cargar Pedidos
+            const { data: pedidos } = await db.from('pedidos').select('*').order('id', { ascending: false });
+            renderPedidos(pedidos);
+
+            // Cargar Turnos
+            const { data: turnos } = await db.from('turnos').select('*').order('id', { ascending: false });
+            renderTurnos(turnos);
+
+            // Cargar Médicos
+            const { data: medicos } = await db.from('medicos').select('*');
+            renderMedicos(medicos);
+        }
+        
+        window.onload = loadData; // Ejecutar al iniciar
+
+        // === 3. RENDERIZADO (DIBUJAR EN PANTALLA) ===
+        
+        function renderStock(items) {
+            const list = document.getElementById('stock-list');
+            list.innerHTML = '';
+            if(!items || items.length === 0) list.innerHTML = '<p style="text-align:center">No hay insumos</p>';
+            
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `
+                    <div class="inv-row">
+                        <div><h3 style="margin:0; color:var(--primary); font-size:1rem;">${item.nombre}</h3><p style="margin:0; font-size:0.75rem; color:#666;">${item.detalle}</p></div>
+                        <div class="inv-controls">
+                            <button class="inv-btn" onclick="updateDBStock(${item.id}, ${item.cantidad - 1})">-</button>
+                            <input type="number" class="inv-val" value="${item.cantidad}" readonly>
+                            <button class="inv-btn" onclick="updateDBStock(${item.id}, ${item.cantidad + 1})">+</button>
+                        </div>
+                    </div>
+                    <div style="text-align:right; margin-top:10px;">
+                        <button onclick="openProviderModal('${item.nombre}')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function renderPedidos(items) {
+            const list = document.getElementById('orders-list');
+            list.innerHTML = '';
+            
+            if(!items) return;
+
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = `card order-card ${item.categoria}`;
+                div.dataset.cat = item.categoria;
+                
+                let extraHtml = '';
+                if(item.categoria === 'reintegro') {
+                    extraHtml = `
+                    <div style="background:#ECFDF5; padding:8px; border-radius:8px; margin-top:5px; font-size:0.8rem; color:#064E3B;">
+                        <div>Costo: <strong>${item.costo || '$0'}</strong></div>
+                        <div>Factura: ${item.tiene_factura ? '✅' : '❌'} | Receta: ${item.tiene_receta ? '✅' : '❌'}</div>
+                    </div>`;
+                }
+
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between;">
+                        <span class="tag ${item.categoria}">${item.proveedor}</span>
+                        <span style="font-size:0.7rem; color:#666;">${item.fecha}</span>
+                    </div>
+                    <h3 style="margin:5px 0; font-size:1rem;">${item.titulo}</h3>
+                    ${extraHtml}
+                    <div class="order-status">
+                        <span style="color:var(--primary); font-weight:600; font-size:0.85rem;">${item.estado}</span>
+                        <button style="border:none; background:none; color:#999; font-size:0.7rem;">...</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function renderTurnos(items) {
+            const list = document.getElementById('turnos-list');
+            list.innerHTML = '';
+            if(!items) return;
+            
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'card turn-item';
+                div.innerHTML = `
+                    <div class="turn-date">
+                        <span class="turn-day">${item.dia}</span>
+                        <span class="turn-month">${item.mes}</span>
+                    </div>
+                    <div>
+                        <h3 style="margin:0; font-size:1rem; color:var(--text-main);">${item.profesional}</h3>
+                        <p style="margin:0; font-size:0.8rem; color:var(--text-sec);">${item.detalle}</p>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        function renderMedicos(items) {
+            const list = document.getElementById('medicos-list');
+            list.innerHTML = '';
+            
+            items.forEach(item => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                div.innerHTML = `
+                    <div style="display:flex; gap:15px; align-items:center; margin-bottom:15px;">
+                        <div style="width:48px; height:48px; background:#EEF2FF; border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--primary);"><span class="material-icons-round">medical_services</span></div>
+                        <div><h3 style="margin:0; font-size:1rem; color:var(--primary);">${item.nombre}</h3><p style="margin:0; font-size:0.8rem; color:var(--text-sec);">${item.especialidad}</p></div>
+                    </div>
+                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                        <button onclick="window.open('https://wa.me/549${item.telefono}', '_blank')" style="padding:10px; background:var(--bg); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-icons-round" style="color:#25D366; font-size:18px;">chat</span> WhatsApp</button>
+                        <button onclick="window.location.href='tel:${item.telefono}'" style="padding:10px; background:var(--bg); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-icons-round" style="color:var(--primary); font-size:18px;">call</span> Llamar</button>
+                    </div>
+                `;
+                list.appendChild(div);
+            });
+        }
+
+        // === 4. LÓGICA DE ACTUALIZACIÓN (DB) ===
+
+        async function updateDBStock(id, newQty) {
+            if(newQty < 0) return;
+            // Actualizar DB
+            await db.from('insumos').update({ cantidad: newQty }).eq('id', id);
+            // Recargar visual
+            loadData(); 
+        }
+
+        // === 5. AGREGAR COSAS NUEVAS (UI + DB) ===
+        
+        let pendingItemName = '';
+        function openProviderModal(itemName) {
+            pendingItemName = itemName;
+            document.getElementById('modalItemName').innerText = itemName;
+            document.getElementById('modalProvider').style.display = 'flex';
+        }
+        function closeModal() { document.getElementById('modalProvider').style.display = 'none'; }
+
+        async function confirmOrder(provider) {
+            closeModal();
+            const tagClass = provider === 'OSEF' ? 'osef' : 'pfa';
+            
+            // Guardar en Supabase
+            await db.from('pedidos').insert([{
+                titulo: `Pedido: ${pendingItemName}`,
+                proveedor: provider,
+                categoria: tagClass,
+                estado: 'Iniciado',
+                fecha: new Date().toISOString().split('T')[0]
+            }]);
+            
+            // Cambiar pestaña y recargar
+            switchTab('tab-gestion', document.querySelectorAll('.nav-item')[1]);
+            loadData();
+        }
+
+        async function addReintegroUI() {
+            const titulo = prompt("¿Qué compraste? (Ej: Consulta Médica)");
+            const costo = prompt("¿Cuánto costó? (Ej: $25000)");
+            
+            if(titulo && costo) {
+                await db.from('pedidos').insert([{
+                    titulo: titulo,
+                    proveedor: 'Reintegro',
+                    categoria: 'reintegro',
+                    estado: 'A Presentar',
+                    costo: costo,
+                    tiene_factura: false,
+                    tiene_receta: false,
+                    fecha: new Date().toISOString().split('T')[0]
+                }]);
+                loadData();
+            }
+        }
+
+        async function addTurnoUI() {
+            const profesional = prompt("Profesional:");
+            const dia = prompt("Día (Número):");
+            const mes = prompt("Mes (Ej: MAR):");
+            
+            if(profesional && dia) {
+                await db.from('turnos').insert([{
+                    dia: dia, mes: mes, profesional: profesional, detalle: 'Pendiente'
+                }]);
+                loadData();
+            }
+        }
+
+        // === 6. UTILIDADES UI ===
         function switchTab(tabId, btn) {
             document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             btn.classList.add('active');
-            
-            // Si vamos a Gestión, mostrar todos por defecto
-            if(tabId === 'tab-gestion') {
-                filterGestion('all', document.querySelector('.filter-btn'));
-            }
             window.scrollTo(0,0);
         }
 
-        // 2. STOCK (+/-)
-        function updateStock(btn, amount) {
-            const input = btn.parentElement.querySelector('input');
-            let val = parseInt(input.value) + amount;
-            if(val < 0) val = 0;
-            input.value = val;
-        }
-
-        // Agregar Nuevo Insumo (Funcionalidad Recuperada)
-        function addNewItem() {
-            const container = document.getElementById('tab-stock');
-            // Insertar antes del título de Medicación o al final
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.innerHTML = `
-                <div class="inv-row">
-                    <div class="inv-info"><h3 contenteditable="true">Nuevo Insumo</h3><p contenteditable="true">Detalle</p></div>
-                    <div class="inv-controls"><button class="inv-btn" onclick="updateStock(this, -1)">-</button><input type="number" class="inv-val" value="0"><button class="inv-btn" onclick="updateStock(this, 1)">+</button></div>
-                </div>
-                <div style="text-align:right; margin-top:10px;"><button onclick="openProviderModal('Nuevo Insumo')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button></div>
-            `;
-            // Insertar antes del botón de agregar
-            const btnContainer = container.lastElementChild;
-            container.insertBefore(div, btnContainer);
-        }
-
-        // 3. GESTIÓN (FILTROS)
-        function filterGestion(category, btn) {
-            const buttons = document.querySelectorAll('.filter-btn');
-            buttons.forEach(b => b.classList.remove('active'));
-            if(btn) btn.classList.add('active');
-
+        function filterGestion(cat, btn) {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            
             const cards = document.querySelectorAll('.order-card');
-            cards.forEach(card => {
-                if (category === 'all' || card.dataset.cat === category) {
-                    card.style.display = 'block';
-                } else {
-                    card.style.display = 'none';
-                }
+            cards.forEach(c => {
+                if(cat === 'all' || c.dataset.cat === cat) c.style.display = 'block';
+                else c.style.display = 'none';
             });
         }
-
-        function setStatus(btn) {
-            const siblings = btn.parentElement.querySelectorAll('.status-btn');
-            siblings.forEach(s => s.classList.remove('active'));
-            btn.classList.add('active');
-        }
-
-        // 4. PEDIDOS (MODAL SELECTOR)
-        let currentItem = '';
-        function openProviderModal(item) {
-            currentItem = item;
-            document.getElementById('modalItemName').innerText = item;
-            document.getElementById('modalProvider').style.display = 'flex';
-        }
-        function closeModal() { document.getElementById('modalProvider').style.display = 'none'; }
-
-        function confirmOrder(provider) {
-            closeModal();
-            const navs = document.querySelectorAll('.nav-item');
-            switchTab('tab-gestion', navs[1]);
-            
-            const container = document.getElementById('orders-list');
-            const div = document.createElement('div');
-            let tagClass = provider === 'OSEF' ? 'osef' : 'pfa';
-            const today = new Date().toLocaleDateString('es-AR', { day: 'numeric', month: 'short' });
-            
-            div.className = `card order-card ${tagClass}`;
-            div.dataset.cat = tagClass;
-            div.style.animation = "fadeIn 0.5s";
-            
-            div.innerHTML = `
-                <div style="display:flex; justify-content:space-between;">
-                    <span class="tag ${tagClass}">${provider}</span>
-                    <span style="font-size:0.7rem; color:#666;">${today}</span>
-                </div>
-                <h3 style="margin:5px 0; font-size:1rem;">${currentItem}</h3>
-                <div class="order-status">
-                    <button class="status-btn active" onclick="setStatus(this)">A Pedir</button>
-                    <button class="status-btn" onclick="setStatus(this)">En Proceso</button>
-                    <button class="status-btn" onclick="setStatus(this)">Listo</button>
-                </div>
-            `;
-            container.prepend(div);
-            filterGestion('all', document.querySelector('.filter-btn'));
-        }
-
-        // Agregar Reintegro (Lógica Recuperada)
-        function addReintegro() {
-            const container = document.getElementById('orders-list');
-            const div = document.createElement('div');
-            div.className = "card order-card reintegro";
-            div.dataset.cat = "reintegro";
-            div.style.animation = "fadeIn 0.5s";
-            div.innerHTML = `
-                <div style="display:flex; justify-content:space-between; align-items:flex-start;">
-                    <span class="tag money">Reintegro</span>
-                    <div style="text-align:right;">
-                        <span style="font-size:0.6rem; color:#666; display:block;">Costo</span>
-                        <span style="font-weight:bold; color:#059669; font-size:0.9rem;" contenteditable="true">$ 0.00</span>
-                    </div>
-                </div>
-                <h3 style="margin: 5px 0 2px 0; font-size: 1rem;" contenteditable="true">Nuevo Gasto</h3>
-                <div class="reintegro-details">
-                    <div class="reintegro-row"><span>🧾 Factura:</span><span contenteditable="true" class="input-dashed">--</span></div>
-                    <div class="reintegro-row"><span>📝 Receta:</span><span contenteditable="true" class="input-dashed">--</span></div>
-                </div>
-                <div class="order-status">
-                    <button class="status-btn active" style="background:#ECFDF5; color:#065F46; border-color:transparent;" onclick="setStatus(this)">A Presentar</button>
-                    <button class="status-btn" onclick="setStatus(this)">Cobrado</button>
-                </div>
-            `;
-            container.prepend(div);
-            // Simular click en filtro Reintegro
-            const btns = document.querySelectorAll('.filter-btn');
-            filterGestion('reintegro', btns[3]);
-        }
-
-        // 5. AGENDA & ARCHIVOS
-        function addTurno() {
-            const container = document.getElementById('turnos-list');
-            const div = document.createElement('div');
-            div.className = 'card turn-item';
-            div.style.animation = "fadeIn 0.5s";
-            div.innerHTML = `
-                <div class="turn-date" contenteditable="true"><span class="turn-day">--</span><span class="turn-month">MES</span></div>
-                <div><h3 style="margin:0; font-size:1rem; color:var(--text-main);" contenteditable="true">Nueva Cita</h3><p style="margin:0; font-size:0.8rem; color:var(--text-sec);" contenteditable="true">Hora y Lugar</p></div>
-            `;
-            container.prepend(div);
-        }
-
-        function uploadFileFake(input) {
-            if (input.files && input.files[0]) {
-                const container = document.getElementById('files-list');
-                const div = document.createElement('div');
-                div.className = 'file-row';
-                div.style.animation = "fadeIn 0.5s";
-                div.innerHTML = `
-                    <div class="file-icon"><span class="material-icons-round">description</span></div>
-                    <div style="flex:1"><div style="font-weight:600; font-size:0.9rem;">${input.files[0].name}</div><div style="font-size:0.75rem; color:#999;">Recién subido</div></div>
-                `;
-                container.prepend(div);
-                alert("Archivo cargado (Simulación)");
-            }
-        }
-
-        // 6. CONTACTO & EQUIPO
-        function addMedic() {
-            const container = document.getElementById('tab-equipo');
-            const div = document.createElement('div');
-            div.className = 'card';
-            div.innerHTML = `
-                <div class="medic-header">
-                    <div style="width:48px; height:48px; background:#EEF2FF; border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--primary);"><span class="material-icons-round">person</span></div>
-                    <div><h3 style="margin:0; font-size:1rem; color:var(--primary);" contenteditable="true">Nuevo</h3><p style="margin:0; font-size:0.8rem; color:var(--text-sec);" contenteditable="true">Especialidad</p></div>
-                </div>
-                <div class="data-box">
-                    <div class="data-row"><span class="material-icons-round" style="font-size:16px; color:#6B7280; margin-right:5px;">phone</span><span class="data-phone" contenteditable="true" style="font-weight:600; color:var(--text-main); outline:none;">2901...</span></div>
-                    <div class="data-row"><span class="material-icons-round" style="font-size:16px; color:#6B7280; margin-right:5px;">email</span><span class="data-email" contenteditable="true" style="color:var(--text-main); outline:none;">email@...</span></div>
-                </div>
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                    <button onclick="actionWhatsApp(this)" style="padding:10px; background:var(--bg); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-icons-round" style="color:#25D366; font-size:18px;">chat</span> WhatsApp</button>
-                    <button onclick="actionCall(this)" style="padding:10px; background:var(--bg); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-icons-round" style="color:var(--primary); font-size:18px;">call</span> Llamar</button>
-                </div>
-            `;
-            // Insertar antes del botón agregar
-            const btnDiv = container.lastElementChild;
-            container.insertBefore(div, btnDiv);
-        }
-
-        function actionWhatsApp(btn) {
-            const card = btn.closest('.card');
-            let phone = card.querySelector('.data-phone').innerText.replace(/[^0-9]/g, '');
-            if(!phone.startsWith('54')) phone = '549' + phone;
-            window.open(`https://wa.me/${phone}`, '_blank');
-        }
-        function actionCall(btn) {
-            const card = btn.closest('.card');
-            let phone = card.querySelector('.data-phone').innerText.replace(/[^0-9]/g, '');
-            window.location.href = `tel:${phone}`;
-        }
-
-        // Inicializar Filtros
-        document.getElementById('main-fab').style.display = 'none'; // El FAB se maneja internamente
     </script>
 </body>
 </html>
