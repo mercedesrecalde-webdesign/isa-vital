@@ -1,380 +1,999 @@
 <!DOCTYPE html>
 <html lang="es">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#003399">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <title>Isa Vital | Cloud</title>
-    
-    <link rel="manifest" href="manifest.json">
-    <link rel="apple-touch-icon" href="icon-192.png">
-    
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
-    
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 
     <style>
-        /* ESTILOS (Mismo diseño Isa Vital 4.0) */
         :root {
-            --primary: #003399; --accent: #FF6600; --white: #FFFFFF; --bg: #F0F2F5;
-            --text-main: #111827; --text-sec: #6B7280;
-            --tag-osef-bg: #FFF7ED; --tag-osef-txt: #9A3412;
-            --tag-pfa-bg: #EFF6FF; --tag-pfa-txt: #1E40AF;
-            --tag-money-bg: #ECFDF5; --tag-money-txt: #065F46;
-            --tag-alert-bg: #FEF2F2; --tag-alert-txt: #991B1B;
+            --primary: #003399;
+            --primary-light: #EEF2FF;
+            --accent: #FF6600;
+            --accent-light: #FFF7ED;
+            --success: #10B981;
+            --danger: #EF4444;
+            --white: #FFFFFF;
+            --bg: #F8FAFC;
+            --text-main: #1E293B;
+            --text-sec: #64748B;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
         }
 
-        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
-        body { font-family: 'Inter', sans-serif; background-color: var(--bg); margin: 0; padding-bottom: 95px; overscroll-behavior-y: none; user-select: none; }
+        * {
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: transparent;
+            outline: none;
+        }
 
-        header { background: var(--white); padding: 15px 20px; position: sticky; top: 0; z-index: 50; box-shadow: 0 1px 10px rgba(0,0,0,0.05); display: flex; justify-content: space-between; align-items: center; padding-top: max(15px, env(safe-area-inset-top)); }
-        .logo { font-size: 1.3rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px; }
-        .logo span { color: var(--accent); }
-        .status-dot { width: 10px; height: 10px; background: #ccc; border-radius: 50%; transition: background 0.3s; }
-        .status-dot.online { background: #10B981; box-shadow: 0 0 5px #10B981; }
+        body {
+            font-family: 'Outfit', sans-serif;
+            background-color: var(--bg);
+            margin: 0;
+            color: var(--text-main);
+            padding-bottom: 110px;
+            overflow-x: hidden;
+        }
 
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; display: none; animation: fadeIn 0.3s; }
-        .container.active { display: block; }
-        .card { background: var(--white); border-radius: 18px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 5px rgba(0,0,0,0.02); border: 1px solid rgba(0,0,0,0.04); }
+        header {
+            background: var(--white);
+            padding: 15px 20px;
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 15px rgba(0, 0, 0, 0.03);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: 800;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo span {
+            color: var(--accent);
+        }
+
+        .user-badge {
+            width: 38px;
+            height: 38px;
+            background: linear-gradient(135deg, var(--primary), #4F46E5);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 700;
+        }
+
+        .container {
+            padding: 20px;
+            max-width: 900px;
+            margin: 0 auto;
+            display: none;
+            animation: slideUp 0.4s ease-out;
+        }
+
+        .container.active {
+            display: block;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .card {
+            background: var(--white);
+            border-radius: 24px;
+            padding: 20px;
+            margin-bottom: 16px;
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(0, 0, 0, 0.02);
+            position: relative;
+        }
 
         /* STOCK */
-        .inv-row { display: flex; justify-content: space-between; align-items: center; }
-        .inv-controls { display: flex; align-items: center; gap: 8px; background: #F3F4F6; padding: 4px; border-radius: 12px; }
-        .inv-btn { width: 32px; height: 32px; border: none; background: white; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); font-weight: bold; color: var(--primary); display:flex; align-items:center; justify-content:center;}
-        .inv-val { font-weight: 700; width: 35px; text-align: center; border:none; background:transparent; font-size: 1rem; }
+        .table-card {
+            padding: 0;
+            overflow: hidden;
+        }
 
-        /* GESTIÓN */
-        .filter-bar { display: flex; gap: 8px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px; scrollbar-width: none; }
-        .filter-btn { border: 1px solid #E5E7EB; background: white; padding: 8px 16px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-sec); white-space: nowrap; cursor: pointer; transition: all 0.2s; }
-        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
-        
-        .tag { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-block; margin-bottom: 8px;}
-        .tag.osef { background: var(--tag-osef-bg); color: var(--tag-osef-txt); }
-        .tag.pfa { background: var(--tag-pfa-bg); color: var(--tag-pfa-txt); }
-        .tag.reintegro { background: var(--tag-money-bg); color: var(--tag-money-txt); }
-        .tag.reclamo { background: var(--tag-alert-bg); color: var(--tag-alert-txt); }
+        .table-header {
+            padding: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
 
-        .order-card { border-left: 4px solid transparent; }
-        .order-card.osef { border-left-color: var(--accent); }
-        .order-card.pfa { border-left-color: var(--primary); }
-        .order-card.reintegro { border-left-color: #10B981; }
-        .order-card.reclamo { border-left-color: #EF4444; }
+        .stock-table-wrapper {
+            overflow-x: auto;
+            width: 100%;
+        }
 
-        /* AGENDA */
-        .turn-item { display: flex; align-items: center; gap: 15px; }
-        .turn-date { background: #EEF2FF; color: var(--primary); padding: 8px 12px; border-radius: 12px; text-align: center; min-width: 60px; }
-        .turn-day { font-size: 1.2rem; font-weight: 700; display: block; line-height: 1; }
-        .turn-month { font-size: 0.7rem; text-transform: uppercase; font-weight: 600; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
 
-        /* NAV & MODAL */
-        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.98); border-top: 1px solid #E5E7EB; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; padding-bottom: max(15px, env(safe-area-inset-bottom)); }
-        .nav-item { border: none; background: none; display: flex; flex-direction: column; align-items: center; color: #9CA3AF; font-size: 0.65rem; gap: 4px; cursor: pointer; width: 25%; }
-        .nav-item.active { color: var(--primary); }
-        .nav-item.active span.material-icons-round { color: var(--accent); transform: translateY(-2px); }
+        th {
+            background: #F8FAFC;
+            padding: 14px 15px;
+            text-align: left;
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            color: var(--text-sec);
+            font-weight: 700;
+            border-bottom: 1px solid #E5E7EB;
+        }
 
-        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; align-items: center; justify-content: center; backdrop-filter: blur(2px); }
-        .modal-box { background: white; width: 85%; max-width: 320px; padding: 25px; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; }
-        .modal-btn { width: 100%; padding: 12px; margin-top: 10px; border: none; border-radius: 10px; font-weight: 600; cursor: pointer; font-size: 0.9rem; display: flex; align-items: center; justify-content: center; gap: 10px; }
-        
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        td {
+            padding: 16px 15px;
+            border-bottom: 1px solid #F1F5F9;
+        }
+
+        .editable-cell {
+            width: 60px;
+            text-align: center;
+            font-weight: 800;
+            color: var(--text-main);
+            background: var(--primary-light);
+            border: none;
+            border-radius: 10px;
+            padding: 8px;
+            font-family: inherit;
+            font-size: 1rem;
+        }
+
+        .btn {
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 12px 16px;
+            transition: 0.2s;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-accent {
+            background: var(--accent);
+            color: white;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.75rem;
+            border-radius: 8px;
+        }
+
+        .btn-icon {
+            padding: 8px;
+            border-radius: 10px;
+            background: #f0f4f8;
+            color: var(--primary);
+        }
+
+        /* NAV */
+        nav {
+            position: fixed;
+            bottom: 15px;
+            left: 10px;
+            right: 10px;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 10px 0;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+        }
+
+        .nav-item {
+            border: none;
+            background: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            color: #94A3B8;
+            font-size: 0.6rem;
+            gap: 4px;
+            cursor: pointer;
+            font-weight: 700;
+            width: 15%;
+        }
+
+        .nav-item.active {
+            color: var(--primary);
+            transform: translateY(-3px);
+        }
+
+        .nav-item.active .material-icons-round {
+            color: var(--accent);
+        }
+
+        /* GESTION */
+        .section-title {
+            font-size: 0.9rem;
+            font-weight: 800;
+            color: var(--text-sec);
+            margin: 25px 0 15px 5px;
+            text-transform: uppercase;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .order-card {
+            border-left: 6px solid var(--primary);
+            padding: 15px;
+        }
+
+        .order-card.mora {
+            border-left-color: var(--danger);
+            background: #FFF1F2;
+        }
+
+        .doc-badge {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 5px 10px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            text-decoration: none;
+        }
+
+        /* EQUIPO */
+        .medico-card {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .medico-header {
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .medico-avatar {
+            width: 50px;
+            height: 50px;
+            background: var(--primary-light);
+            color: var(--primary);
+            border-radius: 15px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+        }
+
+        .medico-actions {
+            display: flex;
+            gap: 10px;
+        }
+
+        .wa-btn {
+            background: #25D366;
+            color: white;
+            flex: 1;
+        }
+
+        .mail-btn {
+            background: #EA4335;
+            color: white;
+            flex: 1;
+        }
+
+        /* INFORMES Y COMPRAS */
+        .informe-card {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .informe-main {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .informe-btns {
+            display: flex;
+            gap: 8px;
+            margin-top: 5px;
+        }
+
+        /* MODALES */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(15, 23, 42, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 2000;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .modal {
+            background: white;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 32px;
+            padding: 30px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+
+        .label {
+            display: block;
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: var(--text-sec);
+            margin-bottom: 6px;
+        }
+
+        .input {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid #E2E8F0;
+            border-radius: 14px;
+            font-size: 1rem;
+            font-family: inherit;
+            background: #F8FAFC;
+        }
+
+        .medico-select-item {
+            padding: 15px;
+            border-radius: 15px;
+            background: #F8FAFC;
+            margin-bottom: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .medico-select-item:hover {
+            border-color: var(--primary);
+            background: var(--primary-light);
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 100px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1E293B;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 50px;
+            font-weight: 600;
+            display: none;
+            z-index: 3000;
+        }
     </style>
 </head>
+
 <body>
 
     <header>
-        <div class="logo"><span class="material-icons-round" style="color:var(--accent);">favorite</span>Isa<span>Vital</span></div>
-        <div style="display:flex; align-items:center; gap:10px;">
-            <div id="connectionStatus" class="status-dot"></div>
-            <div style="width:32px; height:32px; background:#EEF2FF; border-radius:50%; display:flex; align-items:center; justify-content:center; color:var(--primary); font-weight:bold; font-size:0.8rem;">IG</div>
-        </div>
+        <div class="logo"><span class="material-icons-round">favorite</span>Isa<span>Vital</span></div>
+        <div class="user-badge">IG</div>
     </header>
 
+    <!-- TAB: STOCK -->
     <div id="tab-stock" class="container active">
-        <h4 style="color:var(--text-sec); font-size:0.75rem; margin:15px 5px; font-weight:700;">INSUMOS T1D</h4>
-        <div id="stock-list">
-            <div style="text-align:center; padding:20px; color:#999;">Cargando stock de la nube...</div>
+        <div class="card table-card" style="margin-bottom: 10px;">
+            <div class="table-header">
+                <span style="font-weight:800; font-size:1.1rem">Stock de Insumos</span>
+                <button class="btn btn-primary btn-sm" onclick="openModal('modal-insumo')">+ NUEVO</button>
+            </div>
+            <div class="stock-table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Insumo</th>
+                            <th style="text-align:center">Mín</th>
+                            <th style="text-align:center">En Casa</th>
+                            <th style="text-align:right">Pedir</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stock-list"></tbody>
+                </table>
+            </div>
         </div>
     </div>
 
+    <!-- TAB: GESTIÓN -->
     <div id="tab-gestion" class="container">
-        <div class="filter-bar">
-            <button class="filter-btn active" onclick="filterGestion('all', this)">Todos</button>
-            <button class="filter-btn" onclick="filterGestion('osef', this)">OSEF</button>
-            <button class="filter-btn" onclick="filterGestion('pfa', this)">PFA</button>
-            <button class="filter-btn" onclick="filterGestion('reintegro', this)">Reintegros</button>
-            <button class="filter-btn" style="color:var(--tag-alert-txt); border-color:#FECACA;" onclick="filterGestion('reclamo', this)">Reclamos</button>
+        <div class="flex-between">
+            <h3 style="margin:0">Gestión de Pedidos</h3>
+            <button class="btn btn-accent" onclick="openModal('modal-pedido')">INICIAR TRÁMITE</button>
         </div>
-        
-        <button onclick="addReintegroUI()" style="width:100%; padding:10px; margin-bottom:15px; border:2px dashed #10B981; color:#10B981; background:#F0FDF4; border-radius:12px; font-weight:600; cursor:pointer;">+ Nuevo Gasto / Reintegro</button>
 
-        <div id="orders-list">
-             <div style="text-align:center; padding:20px; color:#999;">Cargando pedidos...</div>
+        <div class="card" style="margin-top:20px; border-left: 6px solid var(--danger);">
+            <div class="section-title" style="margin:0 0 10px 0; color:var(--danger)">
+                <span class="material-icons-round">report_problem</span> RECLAMOS POR MORA
+            </div>
+            <div id="mora-list"></div>
+            <div id="mora-empty-msg" style="padding:10px; color:var(--text-sec); font-size:0.9rem; display:none">No hay
+                insumos adeudados actualmente.</div>
+            <button id="btn-reclamo-osef" class="btn btn-accent" style="width:100%; margin-top:15px; display:none"
+                onclick="generarNotaReclamoTotal('OSEF')">
+                <span class="material-icons-round">email</span> RECLAMAR TODO A OSEF
+            </button>
+            <button id="btn-reclamo-pfa" class="btn btn-accent" style="width:100%; margin-top:8px; display:none"
+                onclick="generarNotaReclamoTotal('PFA')">
+                <span class="material-icons-round">email</span> RECLAMAR TODO A POLICÍA
+            </button>
         </div>
+
+        <div class="section-title"><span class="material-icons-round" style="color:var(--primary)">local_shipping</span>
+            Trámites y Pedidos Activos</div>
+        <div id="pedidos-list"></div>
     </div>
 
+    <!-- TAB: COMPRAS Y REINTEGROS -->
+    <div id="tab-compras" class="container">
+        <div class="flex-between" style="margin-bottom:20px">
+            <h3 style="margin:0">Compras y Reintegros</h3>
+            <button class="btn btn-primary" onclick="openModal('modal-compra')">CARGAR GASTO</button>
+        </div>
+
+        <div id="compras-list"></div>
+        <div id="compras-empty-msg" style="text-align:center; padding:40px; color:var(--text-sec); display:none">No hay
+            compras registradas.</div>
+
+        <button id="btn-pedir-reintegro" class="btn btn-accent" style="width:100%; margin-top:10px; display:none"
+            onclick="generarPedidoReintegro()">
+            <span class="material-icons-round">payments</span> PEDIR TODOS LOS REINTEGROS (OUTLOOK)
+        </button>
+    </div>
+
+    <!-- TAB: INFORMES -->
+    <div id="tab-lab" class="container">
+        <div class="flex-between" style="margin-bottom:20px">
+            <h3 style="margin:0">Informes y Estudios</h3>
+            <button class="btn btn-primary" onclick="openModal('modal-analisis')">SUBIR PDF / IMAGEN</button>
+        </div>
+        <div id="analisis-list"></div>
+    </div>
+
+    <!-- TAB: AGENDA -->
     <div id="tab-agenda" class="container">
-        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
-            <h4 style="margin:0; color:var(--text-sec); font-size:0.75rem; font-weight:700;">PRÓXIMOS TURNOS</h4>
-            <button onclick="addTurnoUI()" style="color:var(--primary); font-weight:700; background:none; border:none;">+ Agendar</button>
+        <div class="flex-between" style="margin-bottom:20px">
+            <h3 style="margin:0">Agenda de Turnos</h3>
+            <button class="btn btn-primary" onclick="openModal('modal-turno')">AGENDAR</button>
         </div>
-        <div id="turnos-list">
-             <div style="text-align:center; padding:20px; color:#999;">Cargando agenda...</div>
-        </div>
+        <div id="turnos-list"></div>
     </div>
 
+    <!-- TAB: EQUIPO -->
     <div id="tab-equipo" class="container">
-        <h4 style="color:var(--text-sec); font-size:0.75rem; margin:15px 5px; font-weight:700;">DIRECTORIO MÉDICO</h4>
-        <div id="medicos-list">
-            <div style="text-align:center; padding:20px; color:#999;">Cargando equipo...</div>
+        <div class="flex-between" style="margin-bottom:20px">
+            <h3 style="margin:0">Equipo Médico</h3>
+            <button class="btn btn-primary" onclick="openModal('modal-medico')">+ AGREGAR DOCTOR</button>
         </div>
+        <div id="medicos-list"></div>
     </div>
 
-    <div id="modalProvider" class="modal-overlay">
-        <div class="modal-box">
-            <h3 style="margin-top:0;">¿Para quién es el pedido?</h3>
-            <p id="modalItemName" style="color:#666; font-size:0.9rem; margin-bottom:20px; font-weight:bold;">Insumo</p>
-            <button class="modal-btn" style="background:#FFF7ED; color:#9A3412;" onclick="confirmOrder('OSEF')"><span class="material-icons-round">local_pharmacy</span> OSEF TDF</button>
-            <button class="modal-btn" style="background:#EFF6FF; color:#1E40AF;" onclick="confirmOrder('PFA')"><span class="material-icons-round">security</span> Policía Federal</button>
-            <button class="modal-btn" style="background:#F3F4F6; color:#374151;" onclick="closeModal()">Cancelar</button>
-        </div>
-    </div>
-
-    <nav class="bottom-nav">
-        <button class="nav-item active" onclick="switchTab('tab-stock', this)"><span class="material-icons-round">inventory_2</span><span>Stock</span></button>
-        <button class="nav-item" onclick="switchTab('tab-gestion', this)"><span class="material-icons-round">assignment</span><span>Gestión</span></button>
-        <button class="nav-item" onclick="switchTab('tab-agenda', this)"><span class="material-icons-round">event</span><span>Agenda</span></button>
-        <button class="nav-item" onclick="switchTab('tab-equipo', this)"><span class="material-icons-round">people</span><span>Equipo</span></button>
+    <nav>
+        <button class="nav-item active" onclick="switchTab('tab-stock', this)"><span
+                class="material-icons-round">inventory_2</span><span>Stock</span></button>
+        <button class="nav-item" onclick="switchTab('tab-gestion', this)"><span
+                class="material-icons-round">assignment</span><span>Gestión</span></button>
+        <button class="nav-item" onclick="switchTab('tab-compras', this)"><span
+                class="material-icons-round">payments</span><span>Reintegros</span></button>
+        <button class="nav-item" onclick="switchTab('tab-lab', this)"><span
+                class="material-icons-round">biotech</span><span>Informes</span></button>
+        <button class="nav-item" onclick="switchTab('tab-agenda', this)"><span
+                class="material-icons-round">calendar_month</span><span>Agenda</span></button>
+        <button class="nav-item" onclick="switchTab('tab-equipo', this)"><span
+                class="material-icons-round">groups</span><span>Equipo</span></button>
     </nav>
 
+    <!-- MODALES -->
+    <div class="modal-overlay" id="modal-medico">
+        <div class="modal">
+            <h3>Ficha del Médico</h3>
+            <input type="hidden" id="edit-med-id">
+            <div class="form-group"><span class="label">Nombre y Apellido</span><input type="text" id="med-nombre"
+                    class="input"></div>
+            <div class="form-group"><span class="label">Especialidad</span><input type="text" id="med-esp"
+                    class="input"></div>
+            <div class="form-group"><span class="label">WhatsApp (Nro sin +)</span><input type="text" id="med-tel"
+                    class="input" placeholder="Ej: 5492901445566"></div>
+            <div class="form-group"><span class="label">Email</span><input type="email" id="med-mail" class="input">
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="guardarMedico()">GUARDAR DOCTOR</button>
+            <button class="btn" style="width:100%; margin-top:10px; color:var(--danger)" id="btn-del-med"
+                onclick="borrarMedico()">ELIMINAR</button>
+            <button class="btn" style="width:100%; margin-top:5px" onclick="closeModals()">CANCELAR</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-turno">
+        <div class="modal">
+            <h3 id="modal-tur-tit">Agendar Turno</h3>
+            <input type="hidden" id="edit-tur-id">
+            <div class="form-group"><span class="label">Profesional</span><input type="text" id="tur-p" class="input">
+            </div>
+            <div class="form-group"><span class="label">Fecha</span><input type="date" id="tur-d" class="input"></div>
+            <div class="form-group"><span class="label">Hora</span><input type="time" id="tur-h" class="input"></div>
+            <div class="form-group"><span class="label">Lugar / Clínica</span><input type="text" id="tur-l"
+                    class="input"></div>
+            <button class="btn btn-primary" style="width:100%" onclick="guardarTurno()">GUARDAR CAMBIOS</button>
+            <button class="btn" style="width:100%; margin-top:10px; color:var(--danger)" id="btn-del-tur"
+                onclick="borrarTurno()">BORRAR TURNO</button>
+            <button class="btn" style="width:100%; margin-top:5px" onclick="closeModals()">CANCELAR</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-insumo">
+        <div class="modal">
+            <h3>Nuevo Insumo</h3>
+            <div class="form-group"><span class="label">Nombre</span><input type="text" id="ins-n" class="input"></div>
+            <div class="form-group"><span class="label">Mínimo Crítico</span><input type="number" id="ins-m"
+                    class="input" value="0"></div>
+            <button class="btn btn-primary" style="width:100%" onclick="crearInsumo()">CREAR</button>
+            <button class="btn" style="width:100%; margin-top:10px" onclick="closeModals()">VOLVER</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-pedido">
+        <div class="modal">
+            <h3>Iniciar Trámite</h3>
+            <div class="form-group"><span class="label">Insumo</span><select id="ped-insumo" class="input"></select>
+            </div>
+            <div class="form-group"><span class="label">Obra Social</span>
+                <select id="ped-prov" class="input">
+                    <option value="OSEF">OSEF TDF</option>
+                    <option value="PFA">POLICÍA FEDERAL</option>
+                    <option value="PARTICULAR">PARTICULAR</option>
+                </select>
+            </div>
+            <button class="btn btn-accent" style="width:100%" onclick="crearPedido()">INICIAR</button>
+            <button class="btn" style="width:100%; margin-top:10px" onclick="closeModals()">CANCELAR</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-compra">
+        <div class="modal">
+            <h3>Registrar Gasto para Reintegro</h3>
+            <div class="form-group"><span class="label">Insumo / Medicamento</span><input type="text" id="com-ins"
+                    class="input"></div>
+            <div class="form-group"><span class="label">Monto Pagado ($)</span><input type="number" id="com-val"
+                    class="input"></div>
+            <div class="form-group"><span class="label">Fecha de Compra</span><input type="date" id="com-fec"
+                    class="input"></div>
+            <div class="form-group"><span class="label">Foto Factura / Recibo</span><input type="file" id="com-file"
+                    class="input"></div>
+            <button class="btn btn-primary" style="width:100%" onclick="guardarCompra()">CARGAR COMPRA</button>
+            <button class="btn" style="width:100%; margin-top:10px" onclick="closeModals()">CANCELAR</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-share">
+        <div class="modal">
+            <h3>Compartir con Médico</h3>
+            <div id="share-medicos-list"></div>
+            <button class="btn" style="width:100%; margin-top:15px" onclick="closeModals()">VOLVER</button>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modal-analisis">
+        <div class="modal">
+            <h3>Subir Informe</h3>
+            <div class="form-group"><span class="label">Título</span><input type="text" id="ana-tit" class="input">
+            </div>
+            <div class="form-group"><span class="label">Fecha</span><input type="date" id="ana-fec" class="input"></div>
+            <div class="form-group"><span class="label">Archivo</span><input type="file" id="ana-file" class="input">
+            </div>
+            <button class="btn btn-primary" style="width:100%" onclick="subirInforme()">SUBIR</button>
+            <button class="btn" style="width:100%; margin-top:10px" onclick="closeModals()">CANCELAR</button>
+        </div>
+    </div>
+
+    <div id="toast"></div>
+
     <script>
-        // === 1. CONFIGURACIÓN SUPABASE ===
         const SUPABASE_URL = 'https://bypjrmgemgboivfbnxgi.supabase.co';
         const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJ5cGpybWdlbWdib2l2ZmJueGdpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njc4Mjg0MzAsImV4cCI6MjA4MzQwNDQzMH0.EuzWicGSNSMbzIPwoQW1iSMc8BLhmdQPOZoNhf7bW1U';
-        const { createClient } = supabase;
-        const db = createClient(SUPABASE_URL, SUPABASE_KEY);
+        const db = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-        // === 2. INICIO Y CARGA DE DATOS ===
-        async function loadData() {
-            // Indicador Online
-            document.getElementById('connectionStatus').classList.add('online');
+        let INSUMOS = []; let MEDICOS = []; let TURNOS = []; let INFORMES = []; let COMPRAS = []; let PEDIDOS = [];
 
-            // Cargar Stock
-            const { data: stock } = await db.from('insumos').select('*').order('id');
-            renderStock(stock);
-
-            // Cargar Pedidos
-            const { data: pedidos } = await db.from('pedidos').select('*').order('id', { ascending: false });
-            renderPedidos(pedidos);
-
-            // Cargar Turnos
-            const { data: turnos } = await db.from('turnos').select('*').order('id', { ascending: false });
-            renderTurnos(turnos);
-
-            // Cargar Médicos
-            const { data: medicos } = await db.from('medicos').select('*');
-            renderMedicos(medicos);
+        async function init() {
+            try { await Promise.all([fetchStock(), fetchPedidos(), fetchInformes(), fetchTurnos(), fetchMedicos(), fetchCompras()]); } catch (e) { }
         }
-        
-        window.onload = loadData; // Ejecutar al iniciar
 
-        // === 3. RENDERIZADO (DIBUJAR EN PANTALLA) ===
-        
-        function renderStock(items) {
-            const list = document.getElementById('stock-list');
-            list.innerHTML = '';
-            if(!items || items.length === 0) list.innerHTML = '<p style="text-align:center">No hay insumos</p>';
-            
-            items.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'card';
-                div.innerHTML = `
-                    <div class="inv-row">
-                        <div><h3 style="margin:0; color:var(--primary); font-size:1rem;">${item.nombre}</h3><p style="margin:0; font-size:0.75rem; color:#666;">${item.detalle}</p></div>
-                        <div class="inv-controls">
-                            <button class="inv-btn" onclick="updateDBStock(${item.id}, ${item.cantidad - 1})">-</button>
-                            <input type="number" class="inv-val" value="${item.cantidad}" readonly>
-                            <button class="inv-btn" onclick="updateDBStock(${item.id}, ${item.cantidad + 1})">+</button>
+        // FETCHERS
+        async function fetchStock() { const { data } = await db.from('insumos').select('*').order('nombre'); INSUMOS = data || []; renderStock(); fillSelects(); }
+        async function fetchPedidos() { const { data } = await db.from('pedidos').select('*').order('id', { ascending: false }); PEDIDOS = data || []; renderPedidos(PEDIDOS); renderStock(); }
+        async function fetchInformes() { const { data } = await db.from('analisis').select('*').order('fecha', { ascending: false }); INFORMES = data || []; renderInformes(); }
+        async function fetchTurnos() { const { data } = await db.from('turnos').select('*').order('fecha', { ascending: true }); TURNOS = data || []; renderTurnos(); }
+        async function fetchMedicos() { const { data } = await db.from('medicos').select('*').order('nombre'); MEDICOS = data || []; renderMedicos(); }
+        async function fetchCompras() { const { data } = await db.from('compras').select('*').order('fecha', { ascending: false }); COMPRAS = data || []; renderCompras(); }
+
+        // RENDERERS
+        function renderStock() {
+            const list = document.getElementById('stock-list'); const moraList = document.getElementById('mora-list');
+            list.innerHTML = ''; moraList.innerHTML = ''; let hasMora = false;
+            INSUMOS.forEach(i => {
+                list.innerHTML += `<tr><td><strong>${i.nombre}</strong></td><td align="center"><input type="number" class="editable-cell" value="${i.min}" onchange="updateVal(${i.id},'min',this.value)"></td><td align="center"><input type="number" class="editable-cell" style="background:var(--accent-light);color:var(--accent)" value="${i.casa}" onchange="updateVal(${i.id},'casa',this.value)"></td><td align="right"><button class="btn btn-accent btn-sm" onclick="abrirPedidoRapido(${i.id})">PEDIR</button></td></tr>`;
+                if (i.mora > 0) {
+                    hasMora = true;
+                    moraList.innerHTML += `<div class="card" style="background:#FFF1F2; margin-bottom:10px; padding:15px; border:1px solid #FECACA">
+                        <div class="flex-between">
+                            <div><strong>${i.nombre}</strong><br><small style="color:var(--danger); font-weight:700">Deuda: ${i.mora} unidades</small></div>
+                            <div style="display:flex;gap:5px">
+                                <button class="btn btn-sm" style="background:white; border:1px solid #ddd" onclick="updateVal(${i.id},'mora',${i.mora - 1})">-</button>
+                                <button class="btn btn-sm" style="background:white; border:1px solid #ddd" onclick="updateVal(${i.id},'mora',${i.mora + 1})">+</button>
+                            </div>
                         </div>
-                    </div>
-                    <div style="text-align:right; margin-top:10px;">
-                        <button onclick="openProviderModal('${item.nombre}')" style="color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer; font-size:0.8rem;">Pedir Insumo &rarr;</button>
-                    </div>
-                `;
-                list.appendChild(div);
-            });
-        }
-
-        function renderPedidos(items) {
-            const list = document.getElementById('orders-list');
-            list.innerHTML = '';
-            
-            if(!items) return;
-
-            items.forEach(item => {
-                const div = document.createElement('div');
-                div.className = `card order-card ${item.categoria}`;
-                div.dataset.cat = item.categoria;
-                
-                let extraHtml = '';
-                if(item.categoria === 'reintegro') {
-                    extraHtml = `
-                    <div style="background:#ECFDF5; padding:8px; border-radius:8px; margin-top:5px; font-size:0.8rem; color:#064E3B;">
-                        <div>Costo: <strong>${item.costo || '$0'}</strong></div>
-                        <div>Factura: ${item.tiene_factura ? '✅' : '❌'} | Receta: ${item.tiene_receta ? '✅' : '❌'}</div>
                     </div>`;
                 }
+            });
 
-                div.innerHTML = `
-                    <div style="display:flex; justify-content:space-between;">
-                        <span class="tag ${item.categoria}">${item.proveedor}</span>
-                        <span style="font-size:0.7rem; color:#666;">${item.fecha}</span>
+            const hasOSEF = PEDIDOS.some(p => p.proveedor === 'OSEF');
+            const hasPFA = PEDIDOS.some(p => p.proveedor === 'PFA');
+
+            document.getElementById('btn-reclamo-osef').style.display = (hasMora || hasOSEF) ? 'flex' : 'none';
+            document.getElementById('btn-reclamo-pfa').style.display = (hasMora || hasPFA) ? 'flex' : 'none';
+            document.getElementById('mora-empty-msg').style.display = hasMora ? 'none' : 'block';
+        }
+
+        function renderPedidos(data) {
+            const list = document.getElementById('pedidos-list'); list.innerHTML = '';
+            data.forEach(p => {
+                list.innerHTML += `<div class="card order-card">
+                    <div class="flex-between"><strong>${p.proveedor}</strong><small>${new Date(p.created_at).toLocaleDateString()}</small></div>
+                    <div style="margin:8px 0; font-weight:700">${p.titulo}</div>
+                    <div style="display:grid; grid-template-columns: 1fr 1fr; gap:10px; margin-top:10px">
+                        <button class="btn btn-sm" style="background:#eee; font-size:0.65rem" onclick="subirDocTramite(${p.id},'receta')">SUBIR RECETA</button>
+                        <button class="btn btn-sm" style="background:#eee; font-size:0.65rem" onclick="subirDocTramite(${p.id},'formulario')">SUBIR FORMULARIO</button>
                     </div>
-                    <h3 style="margin:5px 0; font-size:1rem;">${item.titulo}</h3>
-                    ${extraHtml}
-                    <div class="order-status">
-                        <span style="color:var(--primary); font-weight:600; font-size:0.85rem;">${item.estado}</span>
-                        <button style="border:none; background:none; color:#999; font-size:0.7rem;">...</button>
+                    <div style="display:flex; gap:10px; margin-top:10px">
+                        ${p.receta_url ? `<a href="${p.receta_url}" target="_blank" class="doc-badge">RECETA</a>` : ''}
+                        ${p.formulario_url ? `<a href="${p.formulario_url}" target="_blank" class="doc-badge">FORMULARIO</a>` : ''}
+                        <button class="btn btn-sm btn-accent" style="margin-left:auto; font-size:0.65rem" onclick="generarReclamoPedido('${p.titulo}', '${p.proveedor}')">📧 RECLAMAR</button>
+                        <button class="btn btn-sm" style="color:var(--danger)" onclick="borrarPedido(${p.id})"><span class="material-icons-round">delete</span></button>
                     </div>
-                `;
-                list.appendChild(div);
+                </div>`;
             });
         }
 
-        function renderTurnos(items) {
-            const list = document.getElementById('turnos-list');
-            list.innerHTML = '';
-            if(!items) return;
-            
-            items.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'card turn-item';
-                div.innerHTML = `
-                    <div class="turn-date">
-                        <span class="turn-day">${item.dia}</span>
-                        <span class="turn-month">${item.mes}</span>
+        function renderCompras() {
+            const list = document.getElementById('compras-list'); list.innerHTML = '';
+            let hasCompras = COMPRAS.length > 0;
+            COMPRAS.forEach(c => {
+                list.innerHTML += `<div class="card informe-card">
+                    <div class="informe-main">
+                        <div>
+                            <div style="font-weight:800; color:var(--success)">$ ${parseFloat(c.valor).toLocaleString()}</div>
+                            <strong>${c.insumo}</strong><br><small>${c.fecha}</small>
+                        </div>
+                        <div style="display:flex; gap:8px">
+                            ${c.factura_url ? `<a href="${c.factura_url}" target="_blank" class="btn btn-icon"><span class="material-icons-round">receipt_long</span></a>` : ''}
+                            <button class="btn btn-sm" style="color:var(--danger)" onclick="borrarCompra(${c.id})"><span class="material-icons-round">delete</span></button>
+                        </div>
                     </div>
-                    <div>
-                        <h3 style="margin:0; font-size:1rem; color:var(--text-main);">${item.profesional}</h3>
-                        <p style="margin:0; font-size:0.8rem; color:var(--text-sec);">${item.detalle}</p>
+                </div>`;
+            });
+            document.getElementById('compras-empty-msg').style.display = hasCompras ? 'none' : 'block';
+            document.getElementById('btn-pedir-reintegro').style.display = hasCompras ? 'flex' : 'none';
+        }
+
+        function renderInformes() {
+            const list = document.getElementById('analisis-list'); list.innerHTML = '';
+            INFORMES.forEach(a => {
+                list.innerHTML += `<div class="card informe-card">
+                    <div class="informe-main"><div><strong>${a.nombre}</strong><br><small>${a.fecha}</small></div><a href="${a.archivo_url}" target="_blank" class="btn btn-icon"><span class="material-icons-round">visibility</span></a></div>
+                    <div class="informe-btns">
+                        <button class="btn btn-sm btn-primary" onclick="openShareModal(${a.id})" style="flex:1"><span class="material-icons-round">share</span> ENVIAR</button>
+                        <button class="btn btn-sm" onclick="borrarInforme(${a.id})" style="color:var(--danger)"><span class="material-icons-round">delete</span> BORRAR</button>
                     </div>
-                `;
-                list.appendChild(div);
+                </div>`;
             });
         }
 
-        function renderMedicos(items) {
-            const list = document.getElementById('medicos-list');
-            list.innerHTML = '';
-            
-            items.forEach(item => {
-                const div = document.createElement('div');
-                div.className = 'card';
-                div.innerHTML = `
-                    <div style="display:flex; gap:15px; align-items:center; margin-bottom:15px;">
-                        <div style="width:48px; height:48px; background:#EEF2FF; border-radius:12px; display:flex; align-items:center; justify-content:center; color:var(--primary);"><span class="material-icons-round">medical_services</span></div>
-                        <div><h3 style="margin:0; font-size:1rem; color:var(--primary);">${item.nombre}</h3><p style="margin:0; font-size:0.8rem; color:var(--text-sec);">${item.especialidad}</p></div>
+        function renderMedicos() {
+            const list = document.getElementById('medicos-list'); list.innerHTML = '';
+            MEDICOS.forEach(m => {
+                list.innerHTML += `<div class="card medico-card" onclick="abrirEditarMedico(${m.id})">
+                    <div class="medico-header"><div class="medico-avatar">${m.nombre[0]}</div><div><div style="font-weight:800">${m.nombre}</div><div style="color:var(--accent);font-size:0.8rem">${m.especialidad || 'DOC'}</div></div></div>
+                    <div class="medico-actions">
+                        <a href="https://wa.me/${m.telefono}" target="_blank" class="btn wa-btn" onclick="event.stopPropagation()"><span class="material-icons-round">chat</span> WhatsApp</a>
+                        <a href="mailto:${m.email}" class="btn mail-btn" onclick="event.stopPropagation()"><span class="material-icons-round">mail</span> Email</a>
                     </div>
-                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
-                        <button onclick="window.open('https://wa.me/549${item.telefono}', '_blank')" style="padding:10px; background:var(--bg); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-icons-round" style="color:#25D366; font-size:18px;">chat</span> WhatsApp</button>
-                        <button onclick="window.location.href='tel:${item.telefono}'" style="padding:10px; background:var(--bg); border:none; border-radius:8px; font-weight:600; display:flex; align-items:center; justify-content:center; gap:5px;"><span class="material-icons-round" style="color:var(--primary); font-size:18px;">call</span> Llamar</button>
-                    </div>
-                `;
-                list.appendChild(div);
+                </div>`;
             });
         }
 
-        // === 4. LÓGICA DE ACTUALIZACIÓN (DB) ===
-
-        async function updateDBStock(id, newQty) {
-            if(newQty < 0) return;
-            // Actualizar DB
-            await db.from('insumos').update({ cantidad: newQty }).eq('id', id);
-            // Recargar visual
-            loadData(); 
+        function renderTurnos() {
+            const list = document.getElementById('turnos-list'); list.innerHTML = '';
+            TURNOS.forEach(t => {
+                list.innerHTML += `<div class="card" onclick="abrirEditarTurno(${t.id})" style="cursor:pointer">
+                    <div class="flex-between"><strong>${t.profesional}</strong><span class="material-icons-round" style="color:var(--text-sec);font-size:1.1rem">edit</span></div>
+                    <small style="color:var(--text-sec)">${t.fecha} - ${t.hora}hs<br>${t.lugar}</small>
+                </div>`;
+            });
         }
 
-        // === 5. AGREGAR COSAS NUEVAS (UI + DB) ===
-        
-        let pendingItemName = '';
-        function openProviderModal(itemName) {
-            pendingItemName = itemName;
-            document.getElementById('modalItemName').innerText = itemName;
-            document.getElementById('modalProvider').style.display = 'flex';
-        }
-        function closeModal() { document.getElementById('modalProvider').style.display = 'none'; }
+        // FUNCIONES ACCION
+        async function updateVal(id, field, val) { await db.from('insumos').update({ [field]: val }).eq('id', id); fetchStock(); }
 
-        async function confirmOrder(provider) {
-            closeModal();
-            const tagClass = provider === 'OSEF' ? 'osef' : 'pfa';
-            
-            // Guardar en Supabase
-            await db.from('pedidos').insert([{
-                titulo: `Pedido: ${pendingItemName}`,
-                proveedor: provider,
-                categoria: tagClass,
-                estado: 'Iniciado',
-                fecha: new Date().toISOString().split('T')[0]
-            }]);
-            
-            // Cambiar pestaña y recargar
+        async function crearInsumo() {
+            const n = document.getElementById('ins-n').value;
+            const m = document.getElementById('ins-m').value;
+            await db.from('insumos').insert([{ nombre: n, min: m, casa: 0, mora: 0 }]);
+            closeModals(); fetchStock(); showToast("Insumo creado");
+        }
+
+        async function crearPedido() {
+            const id = document.getElementById('ped-insumo').value;
+            const ins = INSUMOS.find(i => i.id == id);
+            const prov = document.getElementById('ped-prov').value;
+            await db.from('pedidos').insert([{ titulo: `Pedido: ${ins.nombre}`, proveedor: prov }]);
+            closeModals(); fetchPedidos(); showToast("Trámite iniciado");
+        }
+
+        async function borrarPedido(id) {
+            if (!confirm("¿Borrar este trámite?")) return;
+            await db.from('pedidos').delete().eq('id', id);
+            fetchPedidos();
+        }
+
+        async function subirDocTramite(id, type) {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = 'application/pdf,image/*';
+            input.style.display = 'none';
+            document.body.appendChild(input);
+
+            input.onchange = async () => {
+                const file = input.files[0];
+                if (!file) return;
+                showToast(`Subiendo ${type}...`);
+                const name = `${Date.now()}_${type}_doc.pdf`;
+                try {
+                    await db.storage.from('ISA_ARCHIVOS').upload(name, file);
+                    const { data } = db.storage.from('ISA_ARCHIVOS').getPublicUrl(name);
+                    await db.from('pedidos').update({ [`${type}_url`]: data.publicUrl }).eq('id', id);
+                    fetchPedidos();
+                    showToast("Guardado con éxito");
+                } catch (e) {
+                    showToast("Error al subir archivo");
+                } finally {
+                    document.body.removeChild(input);
+                }
+            };
+            input.click();
+        }
+
+        async function guardarCompra() {
+            const ins = document.getElementById('com-ins').value;
+            const val = document.getElementById('com-val').value;
+            const fec = document.getElementById('com-fec').value;
+            const file = document.getElementById('com-file').files[0];
+            if (!ins || !val) return alert("Completá Insumo y Valor");
+
+            showToast("Guardando gasto...");
+            let url = "";
+            if (file) {
+                const name = `${Date.now()}_factura.pdf`;
+                await db.storage.from('ISA_ARCHIVOS').upload(name, file);
+                url = db.storage.from('ISA_ARCHIVOS').getPublicUrl(name).data.publicUrl;
+            }
+
+            await db.from('compras').insert([{ insumo: ins, valor: val, fecha: fec, factura_url: url }]);
+            closeModals(); fetchCompras(); showToast("Gasto registrado");
+        }
+
+        async function borrarCompra(id) {
+            if (!confirm("¿Borrar este registro?")) return;
+            await db.from('compras').delete().eq('id', id);
+            fetchCompras();
+        }
+
+        async function guardarMedico() {
+            const id = document.getElementById('edit-med-id').value;
+            const obj = { nombre: document.getElementById('med-nombre').value, especialidad: document.getElementById('med-esp').value, telefono: document.getElementById('med-tel').value, email: document.getElementById('med-mail').value };
+            if (id) await db.from('medicos').update(obj).eq('id', id);
+            else await db.from('medicos').insert([obj]);
+            closeModals(); fetchMedicos(); showToast("Médico guardado");
+        }
+
+        async function borrarMedico() {
+            const id = document.getElementById('edit-med-id').value;
+            if (!confirm("¿Eliminar doctor?")) return;
+            await db.from('medicos').delete().eq('id', id);
+            closeModals(); fetchMedicos();
+        }
+
+        async function guardarTurno() {
+            const id = document.getElementById('edit-tur-id').value;
+            const obj = { profesional: document.getElementById('tur-p').value, fecha: document.getElementById('tur-d').value, hora: document.getElementById('tur-h').value, lugar: document.getElementById('tur-l').value };
+            if (id) await db.from('turnos').update(obj).eq('id', id);
+            else await db.from('turnos').insert([obj]);
+            closeModals(); fetchTurnos(); showToast("Turno guardado");
+        }
+
+        async function borrarTurno() {
+            const id = document.getElementById('edit-tur-id').value;
+            if (!confirm("¿Borrar turno?")) return;
+            await db.from('turnos').delete().eq('id', id);
+            closeModals(); fetchTurnos();
+        }
+
+        async function borrarInforme(id) {
+            if (!confirm("¿Borrar estudio?")) return;
+            await db.from('analisis').delete().eq('id', id);
+            fetchInformes(); showToast("Informe eliminado");
+        }
+
+        async function subirInforme() {
+            const file = document.getElementById('ana-file').files[0];
+            const name = `${Date.now()}_report.pdf`;
+            showToast("Subiendo...");
+            await db.storage.from('ISA_ARCHIVOS').upload(name, file);
+            const { data } = db.storage.from('ISA_ARCHIVOS').getPublicUrl(name);
+            await db.from('analisis').insert([{ nombre: document.getElementById('ana-tit').value, fecha: document.getElementById('ana-fec').value, archivo_url: data.publicUrl }]);
+            closeModals(); fetchInformes(); showToast("Informe guardado");
+        }
+
+        function abrirEditarMedico(id) {
+            const m = MEDICOS.find(x => x.id === id);
+            document.getElementById('edit-med-id').value = m.id;
+            document.getElementById('med-nombre').value = m.nombre;
+            document.getElementById('med-esp').value = m.especialidad;
+            document.getElementById('med-tel').value = m.telefono;
+            document.getElementById('med-mail').value = m.email;
+            document.getElementById('btn-del-med').style.display = 'block';
+            openModal('modal-medico');
+        }
+
+        function generarNotaReclamoTotal(prov) {
+            const peds = PEDIDOS.filter(p => p.proveedor === (prov || 'OSEF'));
+            if (peds.length === 0) return showToast("No hay trámites activos para " + prov);
+
+            const date = new Date().toLocaleDateString('es-AR');
+            let body = "A QUIEN CORRESPONDA (" + prov.toUpperCase() + "):\n\n";
+            body += "Fecha: " + date + "\n\n";
+            body += "Por intermedio de la presente, se reclama formalmente la entrega de los siguientes insumos adeudados o trámites demorados:\n\n";
+
+            peds.forEach(p => {
+                const insumoName = p.titulo.replace("Pedido: ", "");
+                const ins = INSUMOS.find(i => i.nombre.toLowerCase() === insumoName.toLowerCase());
+                const moraPart = (ins && ins.mora > 0) ? " - ADEUDADO: " + ins.mora + " unidades" : " - PENDIENTE DE ENTREGA";
+                body += "• " + p.titulo.toUpperCase() + moraPart + "\n";
+            });
+
+            body += "\nSolicito se regularice la entrega a la brevedad.\n\nAtentamente,\n[Sistema Isa Vital]";
+
+            const subject = "RECLAMO FORMAL DE INSUMOS - " + prov.toUpperCase() + " - " + date;
+            const mailtoUrl = "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+
+            showToast("Abriendo Outlook para " + prov + "...");
+            window.location.href = mailtoUrl;
+        }
+
+        function generarReclamoPedido(titulo, prov) {
+            const date = new Date().toLocaleDateString('es-AR');
+            let body = "SRES. " + prov.toUpperCase() + ":\n\n";
+            body += "Fecha: " + date + "\n\n";
+            body += "Reclamo por pedido: \"" + titulo.toUpperCase() + "\".\n\nSolicito información de entrega.\n\nAtentamente,\n[Sistema Isa Vital]";
+            const subject = "RECLAMO POR PEDIDO: " + titulo.toUpperCase();
+            const mailtoUrl = "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+            window.location.href = mailtoUrl;
+        }
+
+        function generarPedidoReintegro() {
+            const date = new Date().toLocaleDateString('es-AR');
+            let total = 0;
+            let body = "SRES. OBRA SOCIAL:\n\n";
+            body += "Fecha: " + date + "\n\n";
+            body += "Solicito el reintegro de los siguientes gastos realizados en farmacia/insumos médicos:\n\n";
+            COMPRAS.forEach(c => {
+                body += "• " + c.insumo + ": $" + parseFloat(c.valor).toLocaleString() + " (Fecha: " + c.fecha + ")\n";
+                total += parseFloat(c.valor);
+            });
+            body += "\nMONTO TOTAL A REINTEGRAR: $" + total.toLocaleString() + "\n\nSe adjuntan facturas correspondientes.\n\nAtentamente,\n[Sistema Isa Vital]";
+
+            const subject = "SOLICITUD DE REINTEGRO - GASTOS MÉDICOS - " + date;
+            const mailtoUrl = "mailto:?subject=" + encodeURIComponent(subject) + "&body=" + encodeURIComponent(body);
+
+            showToast("Preparando pedido...");
+            window.location.href = mailtoUrl;
+        }
+
+        function openShareModal(infId) {
+            const list = document.getElementById('share-medicos-list'); list.innerHTML = '';
+            MEDICOS.forEach(m => {
+                list.innerHTML += `<div class="medico-select-item" onclick="compartirInforme(${m.id}, ${infId})"><div><strong>${m.nombre}</strong><br><small>${m.especialidad}</small></div><span class="material-icons-round">send</span></div>`;
+            });
+            openModal('modal-share');
+        }
+
+        function compartirInforme(medId, infId) {
+            const m = MEDICOS.find(x => x.id === medId);
+            const a = INFORMES.find(x => x.id === infId);
+            const msg = `Hola Dr. ${m.nombre}, le envío mi estudio "${a.nombre}" de fecha ${a.fecha}: ${a.archivo_url}`;
+            const choice = confirm("¿WhatsApp? (Cancelar para Email)");
+            if (choice) window.open(`https://wa.me/${m.telefono}?text=${encodeURIComponent(msg)}`, '_blank');
+            else window.location.href = `mailto:${m.email}?subject=Informe Isa Vital&body=${encodeURIComponent(msg)}`;
+            closeModals();
+        }
+
+        function abrirPedidoRapido(id) {
             switchTab('tab-gestion', document.querySelectorAll('.nav-item')[1]);
-            loadData();
+            openModal('modal-pedido');
+            document.getElementById('ped-insumo').value = id;
         }
 
-        async function addReintegroUI() {
-            const titulo = prompt("¿Qué compraste? (Ej: Consulta Médica)");
-            const costo = prompt("¿Cuánto costó? (Ej: $25000)");
-            
-            if(titulo && costo) {
-                await db.from('pedidos').insert([{
-                    titulo: titulo,
-                    proveedor: 'Reintegro',
-                    categoria: 'reintegro',
-                    estado: 'A Presentar',
-                    costo: costo,
-                    tiene_factura: false,
-                    tiene_receta: false,
-                    fecha: new Date().toISOString().split('T')[0]
-                }]);
-                loadData();
-            }
-        }
-
-        async function addTurnoUI() {
-            const profesional = prompt("Profesional:");
-            const dia = prompt("Día (Número):");
-            const mes = prompt("Mes (Ej: MAR):");
-            
-            if(profesional && dia) {
-                await db.from('turnos').insert([{
-                    dia: dia, mes: mes, profesional: profesional, detalle: 'Pendiente'
-                }]);
-                loadData();
-            }
-        }
-
-        // === 6. UTILIDADES UI ===
-        function switchTab(tabId, btn) {
+        // UTILS
+        function switchTab(id, btn) {
             document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
+            document.getElementById(id).classList.add('active');
             document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
             btn.classList.add('active');
-            window.scrollTo(0,0);
         }
-
-        function filterGestion(cat, btn) {
-            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-            btn.classList.add('active');
-            
-            const cards = document.querySelectorAll('.order-card');
-            cards.forEach(c => {
-                if(cat === 'all' || c.dataset.cat === cat) c.style.display = 'block';
-                else c.style.display = 'none';
-            });
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModals() {
+            document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
+            document.getElementById('edit-tur-id').value = ''; document.getElementById('edit-med-id').value = '';
         }
+        function showToast(txt) { const t = document.getElementById('toast'); t.innerText = txt; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000); }
+        function fillSelects() {
+            const s = document.getElementById('ped-insumo'); if (s) { s.innerHTML = ''; INSUMOS.forEach(i => s.innerHTML += `<option value="${i.id}">${i.nombre}</option>`); }
+        }
+        window.onload = init;
     </script>
 </body>
+
 </html>

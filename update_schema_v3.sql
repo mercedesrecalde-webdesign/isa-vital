@@ -1,0 +1,21 @@
+-- =============================================
+-- ACTUALIZACIÓN DE ESQUEMA V3 - ISA VITAL (MORA Y PEDIDOS UNIFICADOS)
+-- Ejecutar en: Supabase Dashboard > SQL Editor
+-- =============================================
+
+-- 1. EXTENDER INSUMOS PARA GESTIÓN DE MORA
+ALTER TABLE insumos ADD COLUMN IF NOT EXISTS mora INTEGER DEFAULT 0;
+ALTER TABLE insumos ADD COLUMN IF NOT EXISTS estado_mora TEXT DEFAULT 'normal'; -- 'normal', 'en_mora'
+
+-- 2. ASEGURAR COLUMNAS DE STOCK DETALLADO
+ALTER TABLE insumos ADD COLUMN IF NOT EXISTS min INTEGER DEFAULT 0;
+ALTER TABLE insumos ADD COLUMN IF NOT EXISTS casa INTEGER DEFAULT 0;
+ALTER TABLE insumos ADD COLUMN IF NOT EXISTS anterior INTEGER DEFAULT 0;
+ALTER TABLE insumos ADD COLUMN IF NOT EXISTS pedido INTEGER DEFAULT 0;
+ALTER TABLE insumos ADD COLUMN IF NOT EXISTS recibido INTEGER DEFAULT 0;
+ALTER TABLE insumos ADD COLUMN IF NOT EXISTS deposito INTEGER DEFAULT 0;
+
+-- 3. MEJORAR TABLA PEDIDOS PARA DOCUMENTACIÓN
+ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS receta_url TEXT;
+ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS formulario_url TEXT;
+ALTER TABLE pedidos ADD COLUMN IF NOT EXISTS insumos_detalle JSONB DEFAULT '[]'::jsonb; -- Para guardar múltiples insumos en un solo pedido de mora
