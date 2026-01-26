@@ -522,7 +522,7 @@
     <div id="tab-agenda" class="container">
         <div class="flex-between" style="margin-bottom:20px">
             <h3 style="margin:0">Agenda de Turnos</h3>
-            <button class="btn btn-primary" onclick="openModal('modal-turno')">AGENDAR</button>
+            <button class="btn btn-primary" onclick="prepararNuevoTurno()">AGENDAR</button>
         </div>
         <div id="turnos-list"></div>
     </div>
@@ -531,7 +531,7 @@
     <div id="tab-equipo" class="container">
         <div class="flex-between" style="margin-bottom:20px">
             <h3 style="margin:0">Equipo Médico</h3>
-            <button class="btn btn-primary" onclick="openModal('modal-medico')">+ AGREGAR DOCTOR</button>
+            <button class="btn btn-primary" onclick="prepararNuevoMedico()">+ AGREGAR DOCTOR</button>
         </div>
         <div id="medicos-list"></div>
     </div>
@@ -902,7 +902,8 @@
         }
 
         function abrirEditarMedico(id) {
-            const m = MEDICOS.find(x => x.id === id);
+            const m = MEDICOS.find(x => x.id == id);
+            if (!m) return;
             document.getElementById('edit-med-id').value = m.id;
             document.getElementById('med-nombre').value = m.nombre;
             document.getElementById('med-esp').value = m.especialidad;
@@ -910,6 +911,40 @@
             document.getElementById('med-mail').value = m.email;
             document.getElementById('btn-del-med').style.display = 'block';
             openModal('modal-medico');
+        }
+
+        function prepararNuevoMedico() {
+            document.getElementById('edit-med-id').value = '';
+            document.getElementById('med-nombre').value = '';
+            document.getElementById('med-esp').value = '';
+            document.getElementById('med-tel').value = '';
+            document.getElementById('med-mail').value = '';
+            document.getElementById('btn-del-med').style.display = 'none';
+            openModal('modal-medico');
+        }
+
+        function abrirEditarTurno(id) {
+            const t = TURNOS.find(x => x.id == id);
+            if (!t) return;
+            document.getElementById('edit-tur-id').value = t.id;
+            document.getElementById('tur-p').value = t.profesional;
+            document.getElementById('tur-d').value = t.fecha;
+            document.getElementById('tur-h').value = t.hora;
+            document.getElementById('tur-l').value = t.lugar;
+            document.getElementById('modal-tur-tit').innerText = "Editar Turno";
+            document.getElementById('btn-del-tur').style.display = 'block';
+            openModal('modal-turno');
+        }
+
+        function prepararNuevoTurno() {
+            document.getElementById('edit-tur-id').value = '';
+            document.getElementById('tur-p').value = '';
+            document.getElementById('tur-d').value = '';
+            document.getElementById('tur-h').value = '';
+            document.getElementById('tur-l').value = '';
+            document.getElementById('modal-tur-tit').innerText = "Agendar Turno";
+            document.getElementById('btn-del-tur').style.display = 'none';
+            openModal('modal-turno');
         }
 
         function generarNotaReclamoTotal(prov) {
