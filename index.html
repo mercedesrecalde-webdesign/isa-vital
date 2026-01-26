@@ -5,6 +5,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#003399">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="IsaVital">
     <title>Isa Vital | Cloud</title>
 
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap"
@@ -60,7 +65,13 @@
             color: var(--primary);
             display: flex;
             align-items: center;
-            gap: 8px;
+            gap: 12px;
+        }
+
+        .logo img {
+            height: 42px;
+            width: auto;
+            border-radius: 10px;
         }
 
         .logo span {
@@ -422,7 +433,10 @@
 <body>
 
     <header>
-        <div class="logo"><span class="material-icons-round">favorite</span>Isa<span>Vital</span></div>
+        <div class="logo">
+            <img src="icon-192.png" alt="Isa Vital Logo">
+            Isa<span>Vital</span>
+        </div>
         <div class="user-badge">IG</div>
     </header>
 
