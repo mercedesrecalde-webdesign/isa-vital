@@ -6,13 +6,12 @@
     <meta name="theme-color" content="#003399">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Isa Vital">
+    <meta name="description" content="Gestión de insumos médicos T1D - Isa Vital">
     
     <link rel="manifest" href="manifest.json">
-    
     <link rel="apple-touch-icon" href="icon-192.png">
 
-    <title>Isa Vital | Sistema Integral</title>
+    <title>Isa Vital | Gestión T1D</title>
     
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons+Round" rel="stylesheet">
@@ -27,11 +26,11 @@
             --text-main: #111827;
             --text-sec: #6B7280;
             
-            /* Semáforos */
-            --green-bg: #D1FAE5; --green-txt: #065F46;
-            --red-bg: #FEE2E2;   --red-txt: #991B1B;
-            --orange-bg: #FFEDD5; --orange-txt: #9A3412;
-            --blue-bg: #DBEAFE;  --blue-txt: #1E40AF;
+            /* Categorías */
+            --cat-osef-bg: #FFF7ED; --cat-osef-txt: #9A3412; /* Naranja suave */
+            --cat-pfa-bg: #EFF6FF; --cat-pfa-txt: #1E40AF;  /* Azul suave */
+            --cat-money-bg: #ECFDF5; --cat-money-txt: #065F46; /* Verde suave */
+            --cat-alert-bg: #FEF2F2; --cat-alert-txt: #991B1B; /* Rojo alerta */
         }
 
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
@@ -41,11 +40,11 @@
             background-color: var(--bg);
             margin: 0;
             color: var(--text-main);
-            padding-bottom: 90px; /* Espacio para el menú inferior */
-            overscroll-behavior-y: none; /* Evitar rebote en iOS */
+            padding-bottom: 95px; 
+            overscroll-behavior-y: none;
         }
 
-        /* --- HEADER --- */
+        /* HEADER */
         header {
             background: var(--white);
             padding: 15px 20px;
@@ -54,127 +53,104 @@
             z-index: 50;
             box-shadow: 0 1px 10px rgba(0,0,0,0.05);
             display: flex; justify-content: space-between; align-items: center;
-            padding-top: max(15px, env(safe-area-inset-top)); /* Notch support */
+            padding-top: max(15px, env(safe-area-inset-top));
         }
-        .logo { font-size: 1.2rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 8px;}
+        .logo { font-size: 1.3rem; font-weight: 800; color: var(--primary); display: flex; align-items: center; gap: 6px;}
         .logo span { color: var(--accent); }
-        .user-pic { width: 32px; height: 32px; background: #E0E7FF; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: bold; font-size: 0.8rem;}
+        .user-pic { width: 34px; height: 34px; background: #EEF2FF; border-radius: 50%; display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: bold; font-size: 0.85rem;}
 
-        /* --- CONTENEDORES --- */
-        .container { padding: 15px; max-width: 600px; margin: 0 auto; display: none; animation: fadeIn 0.3s; }
+        /* CONTENEDORES */
+        .container { padding: 15px; max-width: 600px; margin: 0 auto; display: none; animation: fadeIn 0.3s ease-out; }
         .container.active { display: block; }
 
-        /* --- TARJETAS UNIVERSALES --- */
+        /* TARJETAS GENÉRICAS */
         .card {
             background: var(--white);
-            border-radius: 16px;
+            border-radius: 18px;
             padding: 16px;
             margin-bottom: 12px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-            border: 1px solid rgba(0,0,0,0.03);
-            position: relative;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.02);
+            border: 1px solid rgba(0,0,0,0.04);
         }
 
-        /* --- ESTILOS: INVENTARIO (TAB 1) --- */
-        .inv-row { display: flex; justify-content: space-between; align-items: center; }
-        .inv-info h3 { margin: 0 0 4px 0; font-size: 0.95rem; color: var(--primary); }
-        .inv-info p { margin: 0; font-size: 0.75rem; color: var(--text-sec); }
-        
-        .inv-controls { display: flex; align-items: center; gap: 10px; background: #F3F4F6; padding: 4px; border-radius: 12px; }
-        .inv-btn { width: 28px; height: 28px; border: none; background: white; border-radius: 8px; box-shadow: 0 1px 2px rgba(0,0,0,0.1); display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: bold; cursor: pointer; }
-        .inv-val { font-weight: 700; width: 30px; text-align: center; font-size: 0.9rem; border: none; background: transparent; }
+        /* ESTILOS: GESTIÓN (Pestañas y Tarjetas) */
+        .filter-bar {
+            display: flex; gap: 8px; margin-bottom: 20px; overflow-x: auto; padding-bottom: 5px;
+            scrollbar-width: none; /* Firefox */
+        }
+        .filter-bar::-webkit-scrollbar { display: none; } /* Chrome/Safari */
 
-        /* --- ESTILOS: GESTIÓN/PEDIDOS (TAB 2) --- */
-        .order-card { border-left: 4px solid transparent; }
+        .filter-btn {
+            border: 1px solid #E5E7EB; background: white; padding: 8px 16px; 
+            border-radius: 20px; font-size: 0.8rem; font-weight: 600; color: var(--text-sec);
+            white-space: nowrap; cursor: pointer; transition: all 0.2s;
+        }
+        .filter-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 4px 10px rgba(0, 51, 153, 0.2); }
+
+        .order-card { border-left: 5px solid transparent; transition: transform 0.2s; }
         .order-card.osef { border-left-color: var(--accent); }
         .order-card.pfa { border-left-color: var(--primary); }
         .order-card.reintegro { border-left-color: #10B981; }
+        .order-card.reclamo { border-left-color: #EF4444; background: #FFF5F5; }
 
-        .tag { padding: 3px 8px; border-radius: 6px; font-size: 0.65rem; font-weight: 700; text-transform: uppercase; display: inline-block; margin-bottom: 6px;}
-        .tag.osef { background: var(--orange-bg); color: var(--orange-txt); }
-        .tag.pfa { background: var(--blue-bg); color: var(--blue-txt); }
-        .tag.money { background: var(--green-bg); color: var(--green-txt); }
+        .tag { padding: 4px 10px; border-radius: 6px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; display: inline-block; margin-bottom: 8px;}
+        .tag.osef { background: var(--cat-osef-bg); color: var(--cat-osef-txt); }
+        .tag.pfa { background: var(--cat-pfa-bg); color: var(--cat-pfa-txt); }
+        .tag.money { background: var(--cat-money-bg); color: var(--cat-money-txt); }
+        .tag.alert { background: var(--cat-alert-bg); color: var(--cat-alert-txt); }
 
-        .order-status {
-            margin-top: 10px; padding-top: 10px; border-top: 1px dashed #E5E7EB;
-            display: flex; justify-content: space-between; align-items: center;
-        }
-        .status-btn {
-            background: none; border: 1px solid #D1D5DB; padding: 6px 12px; border-radius: 20px;
-            font-size: 0.75rem; font-weight: 600; color: var(--text-sec); display: flex; align-items: center; gap: 5px;
-        }
-        .status-btn.active { background: var(--primary); color: white; border-color: var(--primary); }
+        .order-status { margin-top: 12px; padding-top: 12px; border-top: 1px dashed #E5E7EB; display: flex; justify-content: space-between; }
+        .status-btn { background: none; border: 1px solid #D1D5DB; padding: 6px 12px; border-radius: 20px; font-size: 0.75rem; font-weight: 600; color: var(--text-sec); transition: all 0.2s; }
+        .status-btn.active { background: var(--primary); color: white; border-color: var(--primary); box-shadow: 0 2px 5px rgba(0, 51, 153, 0.2); }
+        
+        /* ESTILOS: STOCK */
+        .inv-row { display: flex; justify-content: space-between; align-items: center; }
+        .inv-info h3 { margin: 0 0 4px 0; font-size: 0.95rem; color: var(--primary); }
+        .inv-info p { margin: 0; font-size: 0.75rem; color: var(--text-sec); }
+        .inv-controls { display: flex; align-items: center; gap: 8px; background: #F3F4F6; padding: 4px; border-radius: 12px; }
+        .inv-btn { width: 32px; height: 32px; border: none; background: white; border-radius: 10px; box-shadow: 0 1px 2px rgba(0,0,0,0.05); display: flex; align-items: center; justify-content: center; color: var(--primary); font-weight: bold; cursor: pointer; }
+        .inv-val { font-weight: 700; width: 35px; text-align: center; font-size: 1rem; border: none; background: transparent; }
 
-        /* --- ESTILOS: EQUIPO (TAB 3) --- */
-        .medic-header { display: flex; gap: 15px; align-items: center; margin-bottom: 10px; }
-        .medic-avatar { width: 50px; height: 50px; background: #EEF2FF; border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
-        .contact-actions { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        .btn-contact {
-            background: var(--bg); border: none; padding: 8px; border-radius: 8px;
-            font-size: 0.8rem; font-weight: 600; color: var(--text-main);
-            display: flex; align-items: center; justify-content: center; gap: 6px; cursor: pointer;
-        }
+        /* ESTILOS: EQUIPO */
+        .medic-header { display: flex; gap: 15px; align-items: center; margin-bottom: 12px; }
+        .medic-avatar { width: 48px; height: 48px; background: #EEF2FF; border-radius: 14px; display: flex; align-items: center; justify-content: center; color: var(--primary); }
+        .contact-actions { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin-top: 10px;}
+        .btn-contact { background: var(--bg); border: none; padding: 10px; border-radius: 10px; font-size: 0.75rem; font-weight: 600; color: var(--text-main); display: flex; align-items: center; justify-content: center; gap: 4px; cursor: pointer; }
+        
+        .data-box { background:#F9FAFB; padding:10px; border-radius:10px; margin-bottom:10px; border:1px solid #eee; }
+        .data-row { display:flex; align-items:center; margin-bottom:8px; font-size: 0.85rem;}
+        .data-row:last-child { margin-bottom:0; }
+        .data-label { color:#6B7280; margin-right:8px; }
 
-        /* --- NAVEGACIÓN INFERIOR --- */
-        .bottom-nav {
-            position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.95);
-            backdrop-filter: blur(10px); border-top: 1px solid #E5E7EB;
-            display: flex; justify-content: space-around; padding: 10px 0 20px 0; z-index: 100;
-            padding-bottom: max(20px, env(safe-area-inset-bottom)); /* iOS Home Bar fix */
-        }
-        .nav-item {
-            border: none; background: none; display: flex; flex-direction: column; align-items: center;
-            color: #9CA3AF; font-size: 0.7rem; gap: 4px; cursor: pointer; transition: 0.2s;
-        }
+        /* NAVEGACIÓN */
+        .bottom-nav { position: fixed; bottom: 0; width: 100%; background: rgba(255,255,255,0.98); border-top: 1px solid #E5E7EB; display: flex; justify-content: space-around; padding: 10px 0; z-index: 100; padding-bottom: max(15px, env(safe-area-inset-bottom)); }
+        .nav-item { border: none; background: none; display: flex; flex-direction: column; align-items: center; color: #9CA3AF; font-size: 0.7rem; gap: 5px; cursor: pointer; transition: 0.2s; width: 33%; }
         .nav-item.active { color: var(--primary); }
-        .nav-item.active span.material-icons-round { transform: translateY(-2px); }
+        .nav-item.active span.material-icons-round { color: var(--accent); transform: translateY(-2px); }
 
-        /* FAB (Botón Flotante) */
-        .fab {
-            position: fixed; bottom: 90px; right: 20px;
-            background: var(--accent); color: white; width: 50px; height: 50px;
-            border-radius: 50%; border: none; box-shadow: 0 4px 15px rgba(255,102,0,0.4);
-            display: flex; align-items: center; justify-content: center; z-index: 90;
-            margin-bottom: env(safe-area-inset-bottom);
-        }
+        /* FAB */
+        .fab { position: fixed; bottom: 95px; right: 20px; background: var(--accent); color: white; width: 56px; height: 56px; border-radius: 50%; border: none; box-shadow: 0 4px 15px rgba(255,102,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 90; margin-bottom: env(safe-area-inset-bottom); cursor: pointer; transition: transform 0.2s; }
+        .fab:active { transform: scale(0.95); }
 
-        [contenteditable]:focus { background: #FFF7ED; outline: none; padding: 2px; }
-        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        h4.section-title { margin: 20px 0 10px 5px; color: var(--text-sec); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 700; }
 
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
 </head>
 <body>
 
     <header>
         <div class="logo">
-            <span class="material-icons-round" style="color:var(--accent); margin-right:5px;">favorite</span>
+            <span class="material-icons-round" style="color:var(--accent);">favorite</span>
             Isa<span>Vital</span>
         </div>
         <div class="user-pic">IG</div>
     </header>
 
     <div id="tab-stock" class="container active">
-        <h4 style="margin: 10px 0; color: var(--text-sec); font-size: 0.8rem; text-transform: uppercase;">Bomba de Insulina & CGM</h4>
         
-        <div class="card">
-            <div class="inv-row">
-                <div class="inv-info">
-                    <h3 contenteditable="true">Sensores Guardian 3</h3>
-                    <p contenteditable="true">MMT-7020 (Cambio cada 7 días)</p>
-                </div>
-                <div class="inv-controls">
-                    <button class="inv-btn" onclick="updateStock(this, -1)">-</button>
-                    <input type="number" class="inv-val" value="2">
-                    <button class="inv-btn" onclick="updateStock(this, 1)">+</button>
-                </div>
-            </div>
-            <div style="margin-top: 10px; text-align: right;">
-                <button onclick="quickOrder('OSEF', 'Sensores Guardian 3')" style="font-size:0.75rem; color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer;">
-                    ¿Falta poco? Pedir a OSEF &rarr;
-                </button>
-            </div>
-        </div>
-
+        <h4 class="section-title">Bomba de Insulina (OSEF)</h4>
+        
         <div class="card">
             <div class="inv-row">
                 <div class="inv-info">
@@ -187,9 +163,29 @@
                     <button class="inv-btn" onclick="updateStock(this, 1)">+</button>
                 </div>
             </div>
+            <div style="margin-top: 10px; text-align: right;">
+                 <button onclick="quickOrder('OSEF', 'Reservorios MMT-332')" style="font-size:0.75rem; color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer;">Pedir a OSEF &rarr;</button>
+            </div>
         </div>
 
-        <h4 style="margin: 20px 0 10px 0; color: var(--text-sec); font-size: 0.8rem; text-transform: uppercase;">Medicación Diaria</h4>
+        <div class="card">
+            <div class="inv-row">
+                <div class="inv-info">
+                    <h3 contenteditable="true">Sensores Guardian 3</h3>
+                    <p contenteditable="true">MMT 7020 (Unidades)</p>
+                </div>
+                <div class="inv-controls">
+                    <button class="inv-btn" onclick="updateStock(this, -1)">-</button>
+                    <input type="number" class="inv-val" value="2">
+                    <button class="inv-btn" onclick="updateStock(this, 1)">+</button>
+                </div>
+            </div>
+             <div style="margin-top: 10px; text-align: right;">
+                 <button onclick="quickOrder('OSEF', 'Sensores Guardian')" style="font-size:0.75rem; color:var(--accent); background:none; border:none; font-weight:600; cursor:pointer;">Pedir a OSEF &rarr;</button>
+            </div>
+        </div>
+
+        <h4 class="section-title">Medicación (PFA/Farmacia)</h4>
         
         <div class="card">
             <div class="inv-row">
@@ -205,44 +201,34 @@
             </div>
         </div>
         
-         <div class="card">
-            <div class="inv-row">
-                <div class="inv-info">
-                    <h3 contenteditable="true">Levotiroxina 125mg</h3>
-                    <p contenteditable="true">1 comprimido diario</p>
-                </div>
-                <div class="inv-controls">
-                    <button class="inv-btn" onclick="updateStock(this, -1)">-</button>
-                    <input type="number" class="inv-val" value="1">
-                    <button class="inv-btn" onclick="updateStock(this, 1)">+</button>
-                </div>
-            </div>
-        </div>
-        
         <div class="card">
             <div class="inv-row">
                 <div class="inv-info">
-                    <h3 contenteditable="true">Tiras Glucosa/Cetonas</h3>
+                    <h3 contenteditable="true">Tiras Glucosa</h3>
                     <p contenteditable="true">Control diario</p>
                 </div>
                 <div class="inv-controls">
-                    <button class="inv-btn" onclick="updateStock(this, -1)">-</button>
+                    <button class="inv-btn" onclick="updateStock(this, -10)">-</button>
                     <input type="number" class="inv-val" value="100">
-                    <button class="inv-btn" onclick="updateStock(this, 1)">+</button>
+                    <button class="inv-btn" onclick="updateStock(this, 10)">+</button>
                 </div>
             </div>
         </div>
     </div>
 
     <div id="tab-gestion" class="container">
-        <div style="display: flex; gap: 10px; margin-bottom: 15px; overflow-x: auto; padding-bottom: 5px;">
-            <span class="tag osef" style="padding: 6px 12px; font-size: 0.75rem;">OSEF</span>
-            <span class="tag pfa" style="padding: 6px 12px; font-size: 0.75rem;">PFA</span>
-            <span class="tag money" style="padding: 6px 12px; font-size: 0.75rem;">Reintegros</span>
+        
+        <div class="filter-bar">
+            <button class="filter-btn active" onclick="filterGestion('all', this)">Todos</button>
+            <button class="filter-btn" onclick="filterGestion('osef', this)">OSEF</button>
+            <button class="filter-btn" onclick="filterGestion('pfa', this)">PFA</button>
+            <button class="filter-btn" onclick="filterGestion('reintegro', this)">Reintegros</button>
+            <button class="filter-btn" style="color:var(--cat-alert-txt); border-color:#FECACA;" onclick="filterGestion('reclamo', this)">Reclamos</button>
         </div>
 
         <div id="orders-list">
-            <div class="card order-card osef">
+            
+            <div class="card order-card osef" data-cat="osef">
                 <div style="display:flex; justify-content:space-between;">
                     <span class="tag osef">OSEF TDF</span>
                     <span style="font-size:0.7rem; color:#666;" contenteditable="true">Exp: 4420-A</span>
@@ -256,22 +242,37 @@
                 </div>
             </div>
 
-            <div class="card order-card pfa">
+            <div class="card order-card pfa" data-cat="pfa">
                 <div style="display:flex; justify-content:space-between;">
                     <span class="tag pfa">Policía Federal</span>
                     <span style="font-size:0.7rem; color:#666;" contenteditable="true">Receta Digital</span>
                 </div>
-                <h3 style="margin: 5px 0; font-size: 1rem;" contenteditable="true">Tiras Reactivas + Agujas</h3>
+                <h3 style="margin: 5px 0; font-size: 1rem;" contenteditable="true">Insulina + Tiras</h3>
                 <div class="order-status">
                     <button class="status-btn" onclick="setStatus(this)">Enviado</button>
-                    <button class="status-btn" onclick="setStatus(this)">Autorizado</button>
                     <button class="status-btn active" style="background:#dcfce7; color:#166534; border-color:transparent;" onclick="setStatus(this)">Retirado</button>
                 </div>
             </div>
+
+            <div class="card order-card reclamo" data-cat="reclamo">
+                <div style="display:flex; justify-content:space-between;">
+                    <span class="tag alert"><span class="material-icons-round" style="font-size:10px; margin-right:2px;">warning</span> Reclamo</span>
+                    <span style="font-size:0.7rem; color:#991B1B; font-weight:bold;" contenteditable="true">URGENTE</span>
+                </div>
+                <h3 style="margin: 5px 0; font-size: 1rem;" contenteditable="true">Faltante Agujas 4mm</h3>
+                <p style="font-size: 0.8rem; color: #666; margin:0;" contenteditable="true">Nota presentada. Plazo vencido.</p>
+                <div class="order-status">
+                    <button class="status-btn active" style="background:#FEE2E2; color:#991B1B; border-color:transparent;" onclick="setStatus(this)">Reclamar</button>
+                    <button class="status-btn" onclick="setStatus(this)">En Curso</button>
+                    <button class="status-btn" onclick="setStatus(this)">Resuelto</button>
+                </div>
+            </div>
+
         </div>
     </div>
 
     <div id="tab-equipo" class="container">
+        
         <div class="card">
             <div class="medic-header">
                 <div class="medic-avatar"><span class="material-icons-round">medical_services</span></div>
@@ -280,35 +281,54 @@
                     <p style="margin:0; font-size:0.8rem; color:var(--text-sec);" contenteditable="true">Hosp. Regional Ushuaia</p>
                 </div>
             </div>
+            
+            <div class="data-box">
+                <div class="data-row">
+                    <span class="material-icons-round data-label" style="font-size:16px;">phone</span>
+                    <span class="data-phone" contenteditable="true" style="font-weight:600; color:var(--text-main); outline:none;">2901 601234</span>
+                </div>
+                <div class="data-row">
+                    <span class="material-icons-round data-label" style="font-size:16px;">email</span>
+                    <span class="data-email" contenteditable="true" style="color:var(--text-main); outline:none;">doctora@email.com</span>
+                </div>
+            </div>
+
             <div class="contact-actions">
-                <button class="btn-contact"><span class="material-icons-round" style="font-size:16px; color:#25D366;">chat</span> WhatsApp</button>
-                <button class="btn-contact"><span class="material-icons-round" style="font-size:16px; color:var(--primary);">call</span> Llamar</button>
+                <button class="btn-contact" onclick="actionWhatsApp(this)">
+                    <span class="material-icons-round" style="font-size:18px; color:#25D366;">chat</span> WhatsApp
+                </button>
+                <button class="btn-contact" onclick="actionCall(this)">
+                    <span class="material-icons-round" style="font-size:18px; color:var(--primary);">call</span> Llamar
+                </button>
+                <button class="btn-contact" onclick="actionMail(this)">
+                    <span class="material-icons-round" style="font-size:18px; color:#EA4335;">mail</span> Email
+                </button>
             </div>
         </div>
         
         <div style="text-align:center; margin-top:20px;">
-            <button onclick="addMedic()" style="background:none; border:2px dashed #ccc; padding:10px 20px; border-radius:12px; color:#666; font-weight:600;">+ Agregar Profesional</button>
+            <button onclick="addMedic()" style="background:none; border:2px dashed #ccc; padding:12px 20px; border-radius:12px; color:#666; font-weight:600;">+ Agregar Profesional</button>
         </div>
     </div>
 
     <button class="fab" id="main-fab" onclick="addOrder()">
-        <span class="material-icons-round">add</span>
+        <span class="material-icons-round" style="font-size: 28px;">add</span>
     </button>
 
     <nav class="bottom-nav">
         <button class="nav-item active" onclick="switchTab('tab-stock', this)">
-            <span class="material-icons-round">inventory_2</span> Stock
+            <span class="material-icons-round">inventory_2</span> <span>Stock</span>
         </button>
         <button class="nav-item" onclick="switchTab('tab-gestion', this)">
-            <span class="material-icons-round">assignment</span> Gestión
+            <span class="material-icons-round">assignment</span> <span>Gestión</span>
         </button>
         <button class="nav-item" onclick="switchTab('tab-equipo', this)">
-            <span class="material-icons-round">contacts</span> Equipo
+            <span class="material-icons-round">contacts</span> <span>Equipo</span>
         </button>
     </nav>
 
     <script>
-        // NAVEGACIÓN
+        // --- NAVEGACIÓN PRINCIPAL ---
         function switchTab(tabId, btn) {
             document.querySelectorAll('.container').forEach(c => c.classList.remove('active'));
             document.getElementById(tabId).classList.add('active');
@@ -318,17 +338,17 @@
             const fab = document.getElementById('main-fab');
             if (tabId === 'tab-gestion') {
                 fab.style.display = 'flex';
-                fab.setAttribute('onclick', 'addOrder()');
+                fab.onclick = function() { quickOrder('OSEF', 'Nuevo Pedido...'); };
             } else if (tabId === 'tab-stock') {
                 fab.style.display = 'flex';
-                fab.setAttribute('onclick', 'alert("Para agregar un medicamento nuevo, edita uno existente o contacta al admin.")');
+                fab.onclick = function() { alert('Usa los botones +/- en cada tarjeta para editar stock.'); };
             } else {
                 fab.style.display = 'none';
             }
             window.scrollTo(0,0);
         }
 
-        // LÓGICA STOCK
+        // --- FUNCIONES STOCK ---
         function updateStock(btn, amount) {
             const input = btn.parentElement.querySelector('input');
             let val = parseInt(input.value);
@@ -337,18 +357,46 @@
             input.value = val;
         }
 
-        // BRIDGE STOCK -> GESTIÓN
+        // --- FUNCIONES GESTIÓN (FILTROS Y PEDIDOS) ---
+        
+        // Función de filtrado (Lo que arreglamos)
+        function filterGestion(category, btn) {
+            // 1. Activar botón visualmente
+            const buttons = document.querySelectorAll('.filter-btn');
+            buttons.forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+
+            // 2. Filtrar tarjetas
+            const cards = document.querySelectorAll('.order-card');
+            cards.forEach(card => {
+                if (category === 'all') {
+                    card.style.display = 'block';
+                } else {
+                    // Compara si la tarjeta tiene la data-cat igual a la categoría
+                    if (card.dataset.cat === category) {
+                        card.style.display = 'block';
+                    } else {
+                        card.style.display = 'none';
+                    }
+                }
+            });
+        }
+
+        // Crear pedido rápido desde Stock
         function quickOrder(tipo, producto) {
-            if(confirm(`¿Quieres generar un pedido en ${tipo} para: ${producto}?`)) {
-                const gestionBtn = document.querySelectorAll('.nav-item')[1];
-                switchTab('tab-gestion', gestionBtn);
+            if(confirm(`¿Generar tarjeta de pedido para: ${producto}?`)) {
+                switchTab('tab-gestion', document.querySelectorAll('.nav-item')[1]);
                 
                 const container = document.getElementById('orders-list');
                 const div = document.createElement('div');
-                div.className = `card order-card ${tipo.toLowerCase()}`;
-                div.style.animation = "fadeIn 0.5s";
                 
-                let tagClass = (tipo === 'OSEF') ? 'osef' : 'pfa';
+                let tagClass = 'osef';
+                if(tipo === 'PFA') tagClass = 'pfa';
+                if(tipo === 'Reintegro') tagClass = 'money';
+                
+                div.className = `card order-card ${tagClass}`;
+                div.dataset.cat = tagClass; // Importante para el filtro
+                div.style.animation = "fadeIn 0.5s";
                 
                 div.innerHTML = `
                     <div style="display:flex; justify-content:space-between;">
@@ -364,19 +412,46 @@
                     </div>
                 `;
                 container.prepend(div);
+                
+                // Resetear filtro a 'todos' para ver el nuevo
+                filterGestion('all', document.querySelector('.filter-btn')); 
             }
         }
 
-        function addOrder() { quickOrder('OSEF', 'Nuevo Insumo...'); }
-
-        // ESTADOS
         function setStatus(btn) {
             const siblings = btn.parentElement.querySelectorAll('.status-btn');
             siblings.forEach(s => s.classList.remove('active'));
             btn.classList.add('active');
         }
 
-        // MÉDICOS
+        // --- FUNCIONES CONTACTO (WHATSAPP REAL) ---
+        function actionWhatsApp(btn) {
+            const card = btn.closest('.card');
+            let phone = card.querySelector('.data-phone').innerText;
+            let cleanPhone = phone.replace(/[^0-9]/g, ''); // Solo números
+
+            if (cleanPhone.length < 6) { alert("Escribe un número válido."); return; }
+
+            // Lógica inteligente Argentina (+549)
+            let finalNumber = cleanPhone;
+            if (!cleanPhone.startsWith('54')) { finalNumber = '549' + cleanPhone; }
+
+            window.open(`https://wa.me/${finalNumber}`, '_blank');
+        }
+
+        function actionCall(btn) {
+            const card = btn.closest('.card');
+            let phone = card.querySelector('.data-phone').innerText;
+            window.location.href = `tel:${phone.replace(/[^0-9+]/g, '')}`;
+        }
+
+        function actionMail(btn) {
+            const card = btn.closest('.card');
+            let email = card.querySelector('.data-email').innerText;
+            window.location.href = `mailto:${email.trim()}`;
+        }
+
+        // --- AGREGAR MÉDICO ---
         function addMedic() {
             const container = document.getElementById('tab-equipo');
             const div = document.createElement('div');
@@ -386,14 +461,22 @@
                     <div class="medic-avatar"><span class="material-icons-round">person</span></div>
                     <div><h3 style="margin:0; font-size:1rem; color:var(--primary);" contenteditable="true">Nuevo</h3><p style="margin:0; font-size:0.8rem; color:var(--text-sec);" contenteditable="true">Especialidad</p></div>
                 </div>
-                <div class="contact-actions"><button class="btn-contact">Teléfono</button><button class="btn-contact">Email</button></div>
+                <div class="data-box">
+                    <div class="data-row"><span class="material-icons-round data-label" style="font-size:16px;">phone</span><span class="data-phone" contenteditable="true" style="font-weight:600; color:var(--text-main); outline:none;">2901...</span></div>
+                    <div class="data-row"><span class="material-icons-round data-label" style="font-size:16px;">email</span><span class="data-email" contenteditable="true" style="color:var(--text-main); outline:none;">email@...</span></div>
+                </div>
+                <div class="contact-actions">
+                    <button class="btn-contact" onclick="actionWhatsApp(this)"><span class="material-icons-round" style="font-size:18px; color:#25D366;">chat</span> WhatsApp</button>
+                    <button class="btn-contact" onclick="actionCall(this)"><span class="material-icons-round" style="font-size:18px; color:var(--primary);">call</span> Llamar</button>
+                    <button class="btn-contact" onclick="actionMail(this)"><span class="material-icons-round" style="font-size:18px; color:#EA4335;">mail</span> Email</button>
+                </div>
             `;
             container.insertBefore(div, container.lastElementChild);
         }
 
         // INICIALIZACIÓN
         document.getElementById('main-fab').style.display = 'flex';
-        document.getElementById('main-fab').setAttribute('onclick', 'alert("Usa los botones +/- para controlar stock.")');
+        document.getElementById('main-fab').onclick = function() { alert('Control de Stock'); };
     </script>
 </body>
 </html>
