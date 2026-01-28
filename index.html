@@ -599,6 +599,20 @@
         </div>
     </div>
 
+    <div class="modal-overlay" id="modal-editar-insumo">
+        <div class="modal">
+            <h3>Editar Insumo</h3>
+            <input type="hidden" id="edit-ins-id">
+            <div class="form-group"><span class="label">Nombre</span><input type="text" id="edit-ins-n" class="input"></div>
+            <div class="form-group"><span class="label">Mínimo Crítico</span><input type="number" id="edit-ins-m" class="input"></div>
+            <div class="form-group"><span class="label">En Casa</span><input type="number" id="edit-ins-c" class="input"></div>
+            <div class="form-group"><span class="label">Mora (Adeudado)</span><input type="number" id="edit-ins-mora" class="input"></div>
+            <button class="btn btn-primary" style="width:100%" onclick="guardarInsumo()">GUARDAR CAMBIOS</button>
+            <button class="btn" style="width:100%; margin-top:10px; color:var(--danger)" id="btn-del-ins" onclick="borrarInsumo()">ELIMINAR INSUMO</button>
+            <button class="btn" style="width:100%; margin-top:5px" onclick="closeModals()">CANCELAR</button>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="modal-pedido">
         <div class="modal">
             <h3>Iniciar Trámite</h3>
@@ -679,7 +693,7 @@
             const list = document.getElementById('stock-list'); const moraList = document.getElementById('mora-list');
             list.innerHTML = ''; moraList.innerHTML = ''; let hasMora = false;
             INSUMOS.forEach(i => {
-                list.innerHTML += `<tr><td><strong>${i.nombre}</strong></td><td align="center"><input type="number" class="editable-cell" value="${i.min}" onchange="updateVal(${i.id},'min',this.value)"></td><td align="center"><input type="number" class="editable-cell" style="background:var(--accent-light);color:var(--accent)" value="${i.casa}" onchange="updateVal(${i.id},'casa',this.value)"></td><td align="right"><button class="btn btn-accent btn-sm" onclick="abrirPedidoRapido(${i.id})">PEDIR</button></td></tr>`;
+                list.innerHTML += `<tr><td><strong style="cursor:pointer;color:var(--primary)" onclick="abrirEditarInsumo(${i.id})">${i.nombre}</strong></td><td align="center"><input type="number" class="editable-cell" value="${i.min}" onchange="updateVal(${i.id},'min',this.value)"></td><td align="center"><input type="number" class="editable-cell" style="background:var(--accent-light);color:var(--accent)" value="${i.casa}" onchange="updateVal(${i.id},'casa',this.value)"></td><td align="right"><button class="btn btn-accent btn-sm" onclick="abrirPedidoRapido(${i.id})">PEDIR</button></td></tr>`;
                 if (i.mora > 0) {
                     hasMora = true;
                     moraList.innerHTML += `<div class="card" style="background:#FFF1F2; margin-bottom:10px; padding:15px; border:1px solid #FECACA">
@@ -787,6 +801,36 @@
             const m = document.getElementById('ins-m').value;
             await db.from('insumos').insert([{ nombre: n, min: m, casa: 0, mora: 0 }]);
             closeModals(); fetchStock(); showToast("Insumo creado");
+        }
+
+        function abrirEditarInsumo(id) {
+            const i = INSUMOS.find(x => x.id == id);
+            if (!i) return;
+            document.getElementById('edit-ins-id').value = i.id;
+            document.getElementById('edit-ins-n').value = i.nombre || '';
+            document.getElementById('edit-ins-m').value = i.min || 0;
+            document.getElementById('edit-ins-c').value = i.casa || 0;
+            document.getElementById('edit-ins-mora').value = i.mora || 0;
+            openModal('modal-editar-insumo');
+        }
+
+        async function guardarInsumo() {
+            const id = document.getElementById('edit-ins-id').value;
+            const obj = {
+                nombre: document.getElementById('edit-ins-n').value,
+                min: parseInt(document.getElementById('edit-ins-m').value) || 0,
+                casa: parseInt(document.getElementById('edit-ins-c').value) || 0,
+                mora: parseInt(document.getElementById('edit-ins-mora').value) || 0
+            };
+            await db.from('insumos').update(obj).eq('id', id);
+            closeModals(); fetchStock(); showToast("Insumo actualizado");
+        }
+
+        async function borrarInsumo() {
+            const id = document.getElementById('edit-ins-id').value;
+            if (!confirm("¿Eliminar este insumo?")) return;
+            await db.from('insumos').delete().eq('id', id);
+            closeModals(); fetchStock(); showToast("Insumo eliminado");
         }
 
         async function crearPedido() {
@@ -1035,7 +1079,7 @@
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModals() {
             document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-            document.getElementById('edit-tur-id').value = ''; document.getElementById('edit-med-id').value = '';
+            document.getElementById('edit-tur-id').value = ''; document.getElementById('edit-med-id').value = ''; document.getElementById('edit-ins-id').value = '';
         }
         function showToast(txt) { const t = document.getElementById('toast'); t.innerText = txt; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000); }
         function fillSelects() {
