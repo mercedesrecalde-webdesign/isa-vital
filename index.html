@@ -427,6 +427,76 @@
             display: none;
             z-index: 3000;
         }
+
+        #connection-error {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--bg);
+            z-index: 1500;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 30px;
+            gap: 15px;
+        }
+
+        #connection-error .error-icon {
+            font-size: 4rem;
+            color: var(--danger);
+            background: #FEE2E2;
+            width: 90px;
+            height: 90px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #connection-error h2 {
+            margin: 0;
+            color: var(--text-main);
+        }
+
+        #connection-error p {
+            color: var(--text-sec);
+            max-width: 350px;
+            line-height: 1.6;
+            margin: 0;
+        }
+
+        #connection-error .btn-retry {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            padding: 14px 30px;
+            font-weight: 700;
+            font-size: 1rem;
+            font-family: inherit;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-top: 10px;
+            transition: 0.2s;
+        }
+
+        #connection-error .btn-retry:hover {
+            transform: scale(1.03);
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .spinning {
+            animation: spin 1s linear infinite;
+        }
     </style>
 </head>
 
@@ -599,20 +669,6 @@
         </div>
     </div>
 
-    <div class="modal-overlay" id="modal-editar-insumo">
-        <div class="modal">
-            <h3>Editar Insumo</h3>
-            <input type="hidden" id="edit-ins-id">
-            <div class="form-group"><span class="label">Nombre</span><input type="text" id="edit-ins-n" class="input"></div>
-            <div class="form-group"><span class="label">Mínimo Crítico</span><input type="number" id="edit-ins-m" class="input"></div>
-            <div class="form-group"><span class="label">En Casa</span><input type="number" id="edit-ins-c" class="input"></div>
-            <div class="form-group"><span class="label">Mora (Adeudado)</span><input type="number" id="edit-ins-mora" class="input"></div>
-            <button class="btn btn-primary" style="width:100%" onclick="guardarInsumo()">GUARDAR CAMBIOS</button>
-            <button class="btn" style="width:100%; margin-top:10px; color:var(--danger)" id="btn-del-ins" onclick="borrarInsumo()">ELIMINAR INSUMO</button>
-            <button class="btn" style="width:100%; margin-top:5px" onclick="closeModals()">CANCELAR</button>
-        </div>
-    </div>
-
     <div class="modal-overlay" id="modal-pedido">
         <div class="modal">
             <h3>Iniciar Trámite</h3>
@@ -667,6 +723,15 @@
         </div>
     </div>
 
+    <div id="connection-error">
+        <div class="error-icon"><span class="material-icons-round">cloud_off</span></div>
+        <h2>Sin conexión al servidor</h2>
+        <p>No se pudo conectar con la base de datos. Es posible que el proyecto de Supabase esté <strong>pausado por inactividad</strong>. Reactivalo desde el dashboard de Supabase y luego reintentá.</p>
+        <button class="btn-retry" onclick="retryConnection()">
+            <span class="material-icons-round" id="retry-icon">refresh</span> REINTENTAR CONEXIÓN
+        </button>
+    </div>
+
     <div id="toast"></div>
 
     <script>
@@ -677,7 +742,28 @@
         let INSUMOS = []; let MEDICOS = []; let TURNOS = []; let INFORMES = []; let COMPRAS = []; let PEDIDOS = [];
 
         async function init() {
-            try { await Promise.all([fetchStock(), fetchPedidos(), fetchInformes(), fetchTurnos(), fetchMedicos(), fetchCompras()]); } catch (e) { }
+            try {
+                // Test connectivity first with a lightweight query
+                const { error: testError } = await db.from('insumos').select('id', { count: 'exact', head: true });
+                if (testError) throw testError;
+
+                // Connection OK — hide error banner if shown
+                document.getElementById('connection-error').style.display = 'none';
+
+                await Promise.all([fetchStock(), fetchPedidos(), fetchInformes(), fetchTurnos(), fetchMedicos(), fetchCompras()]);
+            } catch (e) {
+                console.error('Error de conexión a Supabase:', e);
+                document.getElementById('connection-error').style.display = 'flex';
+            }
+        }
+
+        async function retryConnection() {
+            const icon = document.getElementById('retry-icon');
+            icon.classList.add('spinning');
+            icon.textContent = 'sync';
+            await init();
+            icon.classList.remove('spinning');
+            icon.textContent = 'refresh';
         }
 
         // FETCHERS
@@ -693,7 +779,7 @@
             const list = document.getElementById('stock-list'); const moraList = document.getElementById('mora-list');
             list.innerHTML = ''; moraList.innerHTML = ''; let hasMora = false;
             INSUMOS.forEach(i => {
-                list.innerHTML += `<tr><td><strong style="cursor:pointer;color:var(--primary)" onclick="abrirEditarInsumo(${i.id})">${i.nombre}</strong></td><td align="center"><input type="number" class="editable-cell" value="${i.min}" onchange="updateVal(${i.id},'min',this.value)"></td><td align="center"><input type="number" class="editable-cell" style="background:var(--accent-light);color:var(--accent)" value="${i.casa}" onchange="updateVal(${i.id},'casa',this.value)"></td><td align="right"><button class="btn btn-accent btn-sm" onclick="abrirPedidoRapido(${i.id})">PEDIR</button></td></tr>`;
+                list.innerHTML += `<tr><td><strong>${i.nombre}</strong></td><td align="center"><input type="number" class="editable-cell" value="${i.min}" onchange="updateVal(${i.id},'min',this.value)"></td><td align="center"><input type="number" class="editable-cell" style="background:var(--accent-light);color:var(--accent)" value="${i.casa}" onchange="updateVal(${i.id},'casa',this.value)"></td><td align="right"><button class="btn btn-accent btn-sm" onclick="abrirPedidoRapido(${i.id})">PEDIR</button></td></tr>`;
                 if (i.mora > 0) {
                     hasMora = true;
                     moraList.innerHTML += `<div class="card" style="background:#FFF1F2; margin-bottom:10px; padding:15px; border:1px solid #FECACA">
@@ -801,36 +887,6 @@
             const m = document.getElementById('ins-m').value;
             await db.from('insumos').insert([{ nombre: n, min: m, casa: 0, mora: 0 }]);
             closeModals(); fetchStock(); showToast("Insumo creado");
-        }
-
-        function abrirEditarInsumo(id) {
-            const i = INSUMOS.find(x => x.id == id);
-            if (!i) return;
-            document.getElementById('edit-ins-id').value = i.id;
-            document.getElementById('edit-ins-n').value = i.nombre || '';
-            document.getElementById('edit-ins-m').value = i.min || 0;
-            document.getElementById('edit-ins-c').value = i.casa || 0;
-            document.getElementById('edit-ins-mora').value = i.mora || 0;
-            openModal('modal-editar-insumo');
-        }
-
-        async function guardarInsumo() {
-            const id = document.getElementById('edit-ins-id').value;
-            const obj = {
-                nombre: document.getElementById('edit-ins-n').value,
-                min: parseInt(document.getElementById('edit-ins-m').value) || 0,
-                casa: parseInt(document.getElementById('edit-ins-c').value) || 0,
-                mora: parseInt(document.getElementById('edit-ins-mora').value) || 0
-            };
-            await db.from('insumos').update(obj).eq('id', id);
-            closeModals(); fetchStock(); showToast("Insumo actualizado");
-        }
-
-        async function borrarInsumo() {
-            const id = document.getElementById('edit-ins-id').value;
-            if (!confirm("¿Eliminar este insumo?")) return;
-            await db.from('insumos').delete().eq('id', id);
-            closeModals(); fetchStock(); showToast("Insumo eliminado");
         }
 
         async function crearPedido() {
@@ -1079,7 +1135,7 @@
         function openModal(id) { document.getElementById(id).style.display = 'flex'; }
         function closeModals() {
             document.querySelectorAll('.modal-overlay').forEach(m => m.style.display = 'none');
-            document.getElementById('edit-tur-id').value = ''; document.getElementById('edit-med-id').value = ''; document.getElementById('edit-ins-id').value = '';
+            document.getElementById('edit-tur-id').value = ''; document.getElementById('edit-med-id').value = '';
         }
         function showToast(txt) { const t = document.getElementById('toast'); t.innerText = txt; t.style.display = 'block'; setTimeout(() => t.style.display = 'none', 3000); }
         function fillSelects() {
